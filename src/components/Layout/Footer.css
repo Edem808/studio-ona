@@ -1,0 +1,180 @@
+.footer-ona {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 6rem 0 2rem;
+    font-family: var(--font-sans);
+}
+
+.footer-ona-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 5rem;
+    flex-wrap: wrap;
+    gap: 3rem;
+}
+
+.footer-ona-left {
+    flex: 1;
+    min-width: 300px;
+}
+
+.footer-ona-logo {
+    font-family: 'Walkway UltraBold', sans-serif;
+    font-size: clamp(3rem, 6vw, 4.5rem);
+    font-weight: normal;
+    margin-bottom: 2rem;
+    line-height: 1;
+}
+
+.footer-ona-newsletter {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    max-width: 400px;
+}
+
+.footer-ona-newsletter p {
+    font-size: 0.75rem;
+    font-weight: 300;
+    margin-bottom: 1rem;
+    color: #b3b3b3;
+}
+
+.footer-ona-newsletter-input {
+    display: flex;
+    gap: 1rem;
+}
+
+.footer-ona-newsletter input {
+    flex: 1;
+    background-color: transparent;
+    border: 1px solid #444;
+    padding: 0.8rem 1.2rem;
+    color: #fff;
+    font-size: 0.75rem;
+    outline: none;
+    font-family: var(--font-sans);
+    transition: border-color var(--transition-fast);
+}
+
+.footer-ona-newsletter input:focus {
+    border-color: #fff;
+}
+
+.footer-ona-newsletter input::placeholder {
+    color: #666;
+    letter-spacing: 0.05em;
+}
+
+.footer-ona-newsletter button {
+    background-color: #fff;
+    color: #000;
+    border: none;
+    padding: 0 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: opacity 0.3s ease;
+}
+
+.footer-ona-newsletter button:hover {
+    opacity: 0.8;
+}
+
+.footer-ona-socials {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.footer-ona-socials a {
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+}
+
+.footer-ona-socials a:hover {
+    opacity: 0.7;
+}
+
+.footer-ona-right {
+    display: flex;
+    gap: 5rem;
+    flex: 2;
+    justify-content: flex-end;
+}
+
+.footer-ona-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-ona-title {
+    font-size: 0.875rem;
+    font-weight: 300;
+    margin-bottom: 2.5rem;
+    text-decoration: underline;
+    text-underline-offset: 6px;
+    color: #b3b3b3;
+}
+
+.footer-ona-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.footer-ona-col ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 300;
+    transition: color 0.3s ease;
+}
+
+.footer-ona-col ul li a:hover {
+    color: #b3b3b3;
+}
+
+.footer-ona-bottom {
+    border-top: 1px solid #222;
+    padding-top: 2rem;
+    text-align: center;
+}
+
+.footer-ona-bottom p {
+    font-size: 0.75rem;
+    color: #666;
+    font-weight: 300;
+}
+
+@media (max-width: 1024px) {
+    .footer-ona-right {
+        gap: 3rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-ona-grid {
+        flex-direction: column;
+    }
+
+    .footer-ona-right {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 3rem;
+        width: 100%;
+    }
+
+    .footer-ona-col {
+        min-width: 150px;
+    }
+}

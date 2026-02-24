@@ -1,0 +1,72 @@
+import { Link } from 'react-router-dom';
+import { Icon } from '@iconify/react';
+import './Footer.css';
+
+const Footer = () => {
+    return (
+        <footer className="footer-ona">
+            <div className="container footer-ona-grid">
+                <div className="footer-ona-left">
+                    <h2 className="footer-ona-logo">studio ona</h2>
+                    <form className="footer-ona-newsletter" onSubmit={(e) => e.preventDefault()}>
+                        <p>Inscrivez-vous à notre newsletter pour recevoir nos dernières actualités et offres spéciales.</p>
+                        <div className="footer-ona-newsletter-input">
+                            <input type="email" placeholder="VOTRE EMAIL" required />
+                            <button type="submit">S'INSCRIRE</button>
+                        </div>
+                    </form>
+                    <div className="footer-ona-socials">
+                        <a href="#" aria-label="Instagram">
+                            <Icon icon="prime:instagram" width="24" height="24" />
+                        </a>
+                        <a href="#" aria-label="TikTok">
+                            <Icon icon="prime:tiktok" width="24" height="24" />
+                        </a>
+                        <a href="#" aria-label="Pinterest">
+                            <Icon icon="prime:pinterest" width="24" height="24" />
+                        </a>
+                        <a href="#" aria-label="X">
+                            <Icon icon="prime:twitter" width="20" height="20" />
+                        </a>
+                    </div>
+                </div>
+
+                <div className="footer-ona-right">
+                    <div className="footer-ona-col">
+                        <h3 className="footer-ona-title">Service Client</h3>
+                        <ul>
+                            <li><Link to="/faq">FAQ</Link></li>
+                            <li><Link to="/contact">Contact</Link></li>
+                            <li><Link to="/sav">SAV</Link></li>
+                            <li><Link to="/livraisons">Livraisons et Retours</Link></li>
+                            <li><Link to="/garanties">Garanties</Link></li>
+                        </ul>
+                    </div>
+                    <div className="footer-ona-col">
+                        <h3 className="footer-ona-title">Informations</h3>
+                        <ul>
+                            <li><Link to="/cgv">Conditions générales de vente</Link></li>
+                            <li><Link to="/cgu">Conditions générales d'utilisation</Link></li>
+                            <li><Link to="/cookies">Politique de cookies</Link></li>
+                            <li><Link to="/mentions-legales">Mentions Légales</Link></li>
+                            <li><Link to="/confidentialite">Politique de confidentialité</Link></li>
+                        </ul>
+                    </div>
+                    <div className="footer-ona-col">
+                        <h3 className="footer-ona-title">À propos</h3>
+                        <ul>
+                            <li><Link to="/histoire">Notre histoire</Link></li>
+                            <li><Link to="/magasins">Nos magasins</Link></li>
+                            <li><Link to="/recrutement">Recrutement</Link></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div className="footer-ona-bottom container">
+                <p>© 2026 studio ona - Tous droits réservés.</p>
+            </div>
+        </footer>
+    );
+};
+
+export default Footer;

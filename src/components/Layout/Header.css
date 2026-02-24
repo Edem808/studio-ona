@@ -1,0 +1,228 @@
+.header-ona {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    background-color: transparent;
+    color: var(--color-white);
+    padding: 1.5rem 0;
+    transition: background-color var(--transition-fast), color var(--transition-fast), padding var(--transition-fast);
+    font-family: var(--font-sans);
+}
+
+.header-ona.scrolled {
+    background-color: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-ona-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 102;
+    /* Above overlay */
+}
+
+.header-ona-nav-left,
+.header-ona-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 3.5rem;
+    /* Increased margin between buttons */
+}
+
+.nav-link {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    transition: opacity 0.3s ease;
+}
+
+.nav-link:hover {
+    opacity: 0.7;
+}
+
+.nav-link.text-small {
+    text-transform: none;
+    /* Override previous uppercase if needed, matches image */
+    font-size: 1rem;
+}
+
+.icon-link {
+    margin-left: -1rem;
+    /* Adjust spacing between icons */
+}
+
+.header-ona-nav-right {
+    gap: 2.5rem;
+    /* Adjusted for icons, increased margin */
+}
+
+.header-ona-logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 102;
+    /* Logo is always visible in this design based on the image, 
+     unlike the previous Pagerie design where it faded in */
+}
+
+.header-ona-logo a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.header-ona-logo h2 {
+    font-family: 'Walkway UltraBold', sans-serif;
+    font-size: 2rem;
+    font-weight: normal;
+    line-height: 1;
+    margin: 0;
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    z-index: 102;
+    padding: 0;
+}
+
+/* Notification Badge */
+.badge-notification {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background-color: #000;
+    color: #fff;
+    font-size: 0.65rem;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    z-index: 10;
+}
+
+/* Mobile Overlay Menu */
+.mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000000;
+    color: #fff;
+    z-index: 101;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-fast);
+}
+
+.mobile-menu-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.mobile-nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+    margin-bottom: 4rem;
+}
+
+.mobile-nav-link {
+    font-size: 2.5rem;
+    text-decoration: none;
+    color: #fff;
+    font-weight: 300;
+    transition: opacity 0.3s;
+}
+
+.mobile-nav-link:hover {
+    opacity: 0.7;
+}
+
+.mobile-nav-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.mobile-nav-link-small {
+    background: none;
+    border: none;
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+@media (max-width: 900px) {
+    .header-ona-nav-left {
+        display: none;
+    }
+
+    .header-ona-nav-right .nav-link:not(.icon-link) {
+        display: none;
+        /* Hide text links like Recherche and Compte on mobile header */
+    }
+
+    .mobile-menu-btn {
+        display: block;
+        position: absolute;
+        left: 5%;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .header-ona-inner {
+        /* Ensure hamburger and logos play nice */
+        justify-content: flex-end;
+    }
+
+    /* Move the search button next to the hamburger menu */
+    .header-ona-nav-right .icon-link[aria-label="Recherche"] {
+        position: absolute;
+        left: calc(5% + 45px);
+        /* 45px gives room for the menu icon */
+        top: 50%;
+        transform: translateY(-50%);
+        margin-left: 0;
+    }
+
+    /* Hide Compte on mobile header, it will be in the menu overlay */
+    .header-ona-nav-right .icon-link[aria-label="Compte"] {
+        display: none;
+    }
+
+    /* Adjust gap between remaining icons (Wishlist and Cart) */
+    .header-ona-nav-right {
+        gap: 2rem;
+    }
+}

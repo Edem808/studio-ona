@@ -1,0 +1,69 @@
+.double-image-section {
+    display: flex;
+    width: 100%;
+    /* On ajoute le même padding que .product-showcase (8rem haut/bas, 5% gauche/droite) */
+    padding: 2rem 5% 8rem 5%;
+    /* Suppression du gap pour coller les deux images */
+    /* La hauteur peut être ajustée selon tes besoins (ex: 80vh ou 600px) */
+    height: 70vh;
+    overflow: hidden;
+}
+
+.double-image-box {
+    flex: 1;
+    position: relative;
+    /* On cache tout ce qui déborde si on zoome au survol */
+    overflow: hidden;
+}
+
+.double-image-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    /* Permet de centrer l'image sur les visages par défaut */
+    display: block;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.double-image-box:hover .double-image-img {
+    transform: scale(1.05);
+}
+
+.double-image-link {
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    color: var(--color-white);
+    /* Assure-toi que cette variable existe dans index.css, sinon met #fff */
+    font-size: 1.5rem;
+    font-family: var(--font-primary);
+    text-decoration: underline;
+    text-underline-offset: 6px;
+    text-decoration-thickness: 1px;
+    z-index: 2;
+    transition: opacity 0.3s ease;
+}
+
+.double-image-link:hover {
+    opacity: 0.7;
+}
+
+/* Version responsive pour mobile (les images passent l'une sous l'autre) */
+@media screen and (max-width: 768px) {
+    .double-image-section {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .double-image-box {
+        height: 50vh;
+        /* Chaque image prendra la moitié de l'écran en mobile */
+    }
+
+    .double-image-link {
+        bottom: 20px;
+        left: 20px;
+        font-size: 1.2rem;
+    }
+}
