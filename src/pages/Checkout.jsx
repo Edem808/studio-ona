@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Lock, ShieldCheck, Mail, MapPin, CreditCard, CheckCircle2, Gift } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../lib/supabaseClient';
 import './Checkout.css';
@@ -123,7 +124,7 @@ const CheckoutForm = () => {
 
                 // --- 4. Success Routine ---
                 clearCart();
-                navigate('/checkout/success');
+                navigate('/checkout/success', { state: { orderData } });
             }
 
         } catch (err) {
@@ -154,35 +155,66 @@ const CheckoutForm = () => {
 
     return (
         <form onSubmit={handleSubmit} className="checkout-form">
-            <h3 className="section-title text-sans">Contact</h3>
-            <div className="form-group full-width">
-                <input type="email" name="email" placeholder="Email" required value={formData.email} onChange={handleChange} />
-            </div>
 
-            <h3 className="section-title text-sans" style={{ marginTop: '2rem' }}>Livraison</h3>
-            <div className="form-row">
-                <div className="form-group">
-                    <input type="text" name="firstName" placeholder="Prénom" required value={formData.firstName} onChange={handleChange} />
+            {/* Step 1: Contact */}
+            <div className="checkout-step">
+                <div className="step-header">
+                    <span className="step-number">1</span>
+                    <h3 className="section-title text-sans">Contact</h3>
                 </div>
-                <div className="form-group">
-                    <input type="text" name="lastName" placeholder="Nom" required value={formData.lastName} onChange={handleChange} />
-                </div>
-            </div>
-            <div className="form-group full-width">
-                <input type="text" name="address" placeholder="Adresse" required value={formData.address} onChange={handleChange} />
-            </div>
-            <div className="form-row">
-                <div className="form-group">
-                    <input type="text" name="zip" placeholder="Code postal" required value={formData.zip} onChange={handleChange} />
-                </div>
-                <div className="form-group">
-                    <input type="text" name="city" placeholder="Ville" required value={formData.city} onChange={handleChange} />
+                <div className="step-content">
+                    <div className="form-group full-width input-with-icon">
+                        <Mail className="input-icon" size={18} />
+                        <input type="email" name="email" placeholder="Adresse e-mail" required value={formData.email} onChange={handleChange} />
+                    </div>
                 </div>
             </div>
 
-            <h3 className="section-title text-sans" style={{ marginTop: '2rem' }}>Paiement</h3>
-            <div className="stripe-card-container">
-                <CardElement options={cardElementOptions} />
+            {/* Step 2: Livraison */}
+            <div className="checkout-step">
+                <div className="step-header">
+                    <span className="step-number">2</span>
+                    <h3 className="section-title text-sans">Livraison</h3>
+                </div>
+                <div className="step-content">
+                    <div className="form-row">
+                        <div className="form-group">
+                            <input type="text" name="firstName" placeholder="Prénom" required value={formData.firstName} onChange={handleChange} />
+                        </div>
+                        <div className="form-group">
+                            <input type="text" name="lastName" placeholder="Nom" required value={formData.lastName} onChange={handleChange} />
+                        </div>
+                    </div>
+                    <div className="form-group full-width input-with-icon">
+                        <MapPin className="input-icon" size={18} />
+                        <input type="text" name="address" placeholder="Adresse complète" required value={formData.address} onChange={handleChange} />
+                    </div>
+                    <div className="form-row">
+                        <div className="form-group">
+                            <input type="text" name="zip" placeholder="Code postal" required value={formData.zip} onChange={handleChange} />
+                        </div>
+                        <div className="form-group">
+                            <input type="text" name="city" placeholder="Ville" required value={formData.city} onChange={handleChange} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Step 3: Paiement */}
+            <div className="checkout-step">
+                <div className="step-header">
+                    <span className="step-number">3</span>
+                    <h3 className="section-title text-sans">Paiement sécurisé</h3>
+                </div>
+                <div className="step-content">
+                    <div className="trust-badge">
+                        <ShieldCheck size={20} color="#059669" />
+                        <span>Toutes les transactions sont cryptées et sécurisées.</span>
+                    </div>
+                    <div className="stripe-card-container">
+                        <CardElement options={cardElementOptions} />
+                    </div>
+                </div>
             </div>
 
             {errorMessage && <div className="checkout-error">{errorMessage}</div>}
@@ -192,8 +224,18 @@ const CheckoutForm = () => {
                 className="btn-pay-now"
                 disabled={!stripe || isProcessing || cart.length === 0}
             >
-                {isProcessing ? 'Traitement en cours...' : `Payer ${totalAmount.toFixed(2)}€`}
+                <Lock size={18} strokeWidth={2.5} />
+                <span>{isProcessing ? 'Traitement en cours...' : `Payer ${totalAmount.toFixed(2)}€`}</span>
             </button>
+
+            <div className="guarantees-list">
+                <div className="guarantee-item">
+                    <CheckCircle2 size={16} /> <span>Livraison offerte</span>
+                </div>
+                <div className="guarantee-item">
+                    <CheckCircle2 size={16} /> <span>Retours gratuits sous 30 jours</span>
+                </div>
+            </div>
         </form>
     );
 };
@@ -254,6 +296,22 @@ const Checkout = () => {
                                     </div>
                                 );
                             })}
+                        </div>
+
+                        <div className="summary-promo-box" style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.75rem 1rem',
+                            border: '0.5px solid #111',
+                            fontSize: '0.85rem',
+                            color: '#111',
+                            background: '#fff',
+                            marginBottom: '1.5rem',
+                            fontFamily: 'var(--font-sans)'
+                        }}>
+                            <Gift size={20} />
+                            <span>Étuis offert avec votre commande</span>
                         </div>
 
                         <div className="summary-totals">

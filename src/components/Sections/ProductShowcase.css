@@ -38,6 +38,10 @@
 }
 
 @media (max-width: 1024px) {
+    .product-showcase {
+        padding: 5rem 5%;
+    }
+
     .product-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 3rem 1.5rem;
@@ -45,7 +49,26 @@
 }
 
 @media (max-width: 640px) {
+    .product-showcase {
+        padding: 4rem 5%;
+    }
+
+    .showcase-header {
+        margin-bottom: 2rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .showcase-header h2 {
+        font-size: 1.4rem;
+        line-height: 1.2;
+    }
+
     .product-grid {
-        grid-template-columns: 1fr;
+        /* 2 colonnes sur mobile est le standard e-commerce pour éviter d'avoir des images immenses qui occupent tout l'écran */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem 0.75rem;
+        margin-bottom: 2rem;
     }
 }

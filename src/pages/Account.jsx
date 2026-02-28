@@ -200,7 +200,6 @@ const Account = () => {
                                 {user.user_metadata?.first_name && (
                                     <p><strong>Nom:</strong> {user.user_metadata.first_name} {user.user_metadata?.last_name || ''}</p>
                                 )}
-                                <button className="btn-secondary mt-1" onClick={() => setActiveTab('adresses')} style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}>Gérer mes adresses</button>
                             </div>
                         )}
 

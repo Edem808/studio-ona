@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabaseClient';
 import ProductCard from '../UI/ProductCard';
 import './ProductShowcase.css';
 
-const ProductShowcase = () => {
+const ProductShowcase = ({ title = "Les indispensables de l'été 2026", linkText = "Découvrir" }) => {
     const sectionRef = useRef(null);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -55,8 +55,8 @@ const ProductShowcase = () => {
     return (
         <section className="product-showcase container" ref={sectionRef}>
             <div className="showcase-header">
-                <h2>Les indispensables de l'été 2026</h2>
-                <Link to="/shop" className="shop-all-link text-small">Découvrir &rarr;</Link>
+                <h2>{title}</h2>
+                <Link to="/shop" className="shop-all-link text-small">{linkText} &rarr;</Link>
             </div>
 
             <div className="product-grid">

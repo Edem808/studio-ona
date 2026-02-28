@@ -351,7 +351,10 @@
     }
 
     .product-image-section {
-        height: 60vh;
+        height: auto;
+        aspect-ratio: 4 / 5;
+        max-height: 65vh;
+        width: 100%;
         border-right: none;
         border-bottom: 1px solid #e0ddd7;
         flex: none;
@@ -367,5 +370,32 @@
 
     .product-info-inner {
         max-width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .product-image-section {
+        aspect-ratio: 1 / 1;
+        height: auto;
+        max-height: none;
+    }
+
+    .btn-virtual-tryon {
+        bottom: 1rem;
+        left: 1rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .product-info-section {
+        padding: 1.5rem;
+    }
+
+    .product-title {
+        font-size: 2rem;
+    }
+
+    .price {
+        font-size: 1.5rem;
     }
 }

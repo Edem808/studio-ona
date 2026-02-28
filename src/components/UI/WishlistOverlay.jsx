@@ -94,6 +94,14 @@ const WishlistOverlay = () => {
                             </Link>
                         </div>
                     )}
+
+                    {wishlist.length > 0 && (
+                        <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
+                            <Link to="/wishlist" className="btn-primary" style={{ display: 'block', width: '100%', textAlign: 'center', textDecoration: 'none', padding: '1rem' }} onClick={() => setIsWishlistOpen(false)}>
+                                Voir la page complète
+                            </Link>
+                        </div>
+                    )}
                 </div>
             </div>
         </>

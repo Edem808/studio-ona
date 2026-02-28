@@ -86,7 +86,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
                         ref={inputRef}
                         type="text"
                         className="search-input text-serif"
-                        placeholder="Rechercher une lunette..."
+                        placeholder="Rechercher un modèle…"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />

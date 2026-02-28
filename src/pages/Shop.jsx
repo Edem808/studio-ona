@@ -186,10 +186,10 @@ const Shop = () => {
                         </div>
                         <div className="solaires-filter-toggle" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <div className="mobile-filter-btns" style={{ display: 'flex', gap: '0.5rem' }}>
-                                <button className="btn-filter mobile-btn-collection" onClick={() => { setActiveMobilePanel('collection'); setIsFilterOpen(true); }}>
+                                <button className="btn-filter mobile-btn-collection" onClick={() => { isFilterOpen && activeMobilePanel === 'collection' ? setIsFilterOpen(false) : (setActiveMobilePanel('collection'), setIsFilterOpen(true)); }}>
                                     Collection
                                 </button>
-                                <button className="btn-filter" onClick={() => { setActiveMobilePanel('filters'); setIsFilterOpen(true); }}>
+                                <button className="btn-filter" onClick={() => { isFilterOpen && activeMobilePanel === 'filters' ? setIsFilterOpen(false) : (setActiveMobilePanel('filters'), setIsFilterOpen(true)); }}>
                                     Filtres
                                 </button>
                             </div>
@@ -230,10 +230,10 @@ const Shop = () => {
 
                         <div className="shop-filter-toggle" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <div className="mobile-filter-btns" style={{ display: 'flex', gap: '0.5rem' }}>
-                                <button className="btn-filter mobile-btn-collection" onClick={() => { setActiveMobilePanel('collection'); setIsFilterOpen(true); }}>
+                                <button className="btn-filter mobile-btn-collection" onClick={() => { isFilterOpen && activeMobilePanel === 'collection' ? setIsFilterOpen(false) : (setActiveMobilePanel('collection'), setIsFilterOpen(true)); }}>
                                     Collection
                                 </button>
-                                <button className="btn-filter" onClick={() => { setActiveMobilePanel('filters'); setIsFilterOpen(true); }}>
+                                <button className="btn-filter" onClick={() => { isFilterOpen && activeMobilePanel === 'filters' ? setIsFilterOpen(false) : (setActiveMobilePanel('filters'), setIsFilterOpen(true)); }}>
                                     Filtres +
                                 </button>
                             </div>

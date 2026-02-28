@@ -9,6 +9,39 @@
     gap: 4rem;
 }
 
+/* Step based checkout form */
+.checkout-step {
+    background: #fff;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #eaeaea;
+    padding-bottom: 1rem;
+}
+
+.step-number {
+    background: #000;
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: var(--font-sans);
+}
+
 .checkout-title {
     margin-bottom: 2rem;
 }
@@ -16,9 +49,7 @@
 .section-title {
     font-size: 1.25rem;
     font-weight: 600;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #eaeaea;
+    margin-bottom: 0;
 }
 
 .checkout-form {
@@ -38,10 +69,24 @@
 
 .form-group {
     margin-bottom: 1rem;
+    position: relative;
 }
 
 .full-width {
     width: 100%;
+}
+
+.input-with-icon .input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+.input-with-icon input {
+    padding-left: 3rem !important;
+    /* Make room for icon */
 }
 
 .checkout-form input {
@@ -51,12 +96,27 @@
     border-radius: 4px;
     font-family: var(--font-sans);
     font-size: 1rem;
-    transition: border-color var(--transition-fast);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .checkout-form input:focus {
     outline: none;
     border-color: #000;
+    box-shadow: 0 0 0 1px #000;
+}
+
+/* Trust Badge */
+.trust-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #ecfdf5;
+    color: #065f46;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    font-family: var(--font-sans);
 }
 
 /* Stripe Container */
@@ -65,13 +125,15 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     background: #fff;
-    margin-bottom: 2rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .stripe-card-container.StripeElement--focus {
     border-color: #000;
+    box-shadow: 0 0 0 1px #000;
 }
 
+/* Pay Button */
 .btn-pay-now {
     background: #000;
     color: #fff;
@@ -84,17 +146,42 @@
     cursor: pointer;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    transition: opacity var(--transition-fast);
+    transition: opacity var(--transition-fast), transform 0.2s;
     margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .btn-pay-now:hover:not(:disabled) {
-    opacity: 0.8;
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn-pay-now:disabled {
     background: #ccc;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Guarantees List */
+.guarantees-list {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    color: #666;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+}
+
+.guarantee-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .checkout-error {
@@ -126,7 +213,11 @@
     margin-bottom: 2rem;
     max-height: 400px;
     overflow-y: auto;
-    padding-right: 0.5rem;
+    padding: 0.8rem;
+    /* Padding prevents the badge from touching the scroll boundary */
+    margin: -0.8rem;
+    /* Offset the padding so the visual alignment remains the same */
+    margin-bottom: 1.2rem;
 }
 
 .summary-item {
@@ -141,8 +232,6 @@
     width: 80px;
     height: 80px;
     background: #eaeaea;
-    border-radius: 8px;
-    overflow: hidden;
 }
 
 .summary-item-img img {
@@ -233,5 +322,20 @@
 
     .checkout-grid> :last-child {
         order: 1;
+    }
+
+    .checkout-step {
+        padding: 1.5rem 1rem;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .guarantees-list {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
     }
 }
