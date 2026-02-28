@@ -107,20 +107,21 @@
 
 .product-info {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
 }
 
 .product-name {
     font-size: 0.875rem;
-    color: var(--color-text);
+    color: #000;
     font-weight: 700;
 }
 
 .product-price {
     font-size: 0.875rem;
-    color: var(--color-gray);
-    font-weight: 400;
+    color: #000;
+    font-weight: 700;
 }
 
 .product-badge {
@@ -166,4 +167,19 @@
 .quick-wishlist-btn:hover {
     background: #f5f5f5;
     transform: scale(1.05);
+}
+
+@media (max-width: 900px) {
+
+    .card-carousel-arrow,
+    .card-carousel-indicator,
+    .quick-wishlist-btn {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+    }
+
+    .card-carousel-arrow {
+        width: 24px;
+        height: 24px;
+    }
 }

@@ -1,15 +1,20 @@
 .product-showcase {
     padding: 8rem 5%;
-    text-align: center;
+    text-align: left;
 }
 
 .showcase-header {
     margin-bottom: 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .showcase-header h2 {
-    font-weight: 500;
-    letter-spacing: 0.1em;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #000;
+    margin: 0;
 }
 
 .product-grid {
@@ -21,12 +26,15 @@
 
 .shop-all-link {
     display: inline-block;
-    color: var(--color-gray);
+    text-decoration: underline;
+    text-underline-offset: 0.5rem;
+    color: #000;
+    font-weight: 700;
     transition: color var(--transition-fast);
 }
 
 .shop-all-link:hover {
-    color: var(--color-text);
+    color: var(--color-gray);
 }
 
 @media (max-width: 1024px) {

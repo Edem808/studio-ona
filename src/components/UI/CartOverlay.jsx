@@ -100,7 +100,7 @@ const CartOverlay = () => {
                     {/* Recommendations Section */}
                     {cart.length > 0 && recommendations.length > 0 && (
                         <div className="cart-recommendations">
-                            <h4 className="cart-rec-title">Vous aimerez aussi :</h4>
+                            <h4 className="cart-rec-title">Nos clients ont aussi acheté :</h4>
                             <div className="cart-rec-grid">
                                 {recommendations.map(prod => (
                                     <div key={`rec-${prod.id}`} onClick={() => setIsCartOpen(false)} style={{ cursor: 'pointer' }}>

@@ -78,8 +78,8 @@
 }
 
 .btn-hero-primary:hover {
-    background-color: #000;
-    border-color: rgba(255, 255, 255, 0.3);
+    background-color: #554f4f;
+    opacity: 1;
 }
 
 @media (max-width: 768px) {

@@ -5,7 +5,17 @@ import { supabase } from '../lib/supabaseClient';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/UI/ProductCard';
+import ProductReviews from '../components/UI/ProductReviews';
 import './ProductDetail.css';
+
+const getValidImageUrl = (url) => {
+    if (!url) return '';
+    let processed = url.replace(/^https?:\/\/localhost(:\d+)?/i, '');
+    if (!processed.startsWith('/') && !processed.startsWith('http')) {
+        processed = '/' + processed;
+    }
+    return processed;
+};
 
 const ProductDetail = () => {
     const { slug } = useParams(); // Using slug from URL
@@ -74,7 +84,7 @@ const ProductDetail = () => {
 
     // Accordion State Management
     const [openAccordions, setOpenAccordions] = useState({
-        details: true, // Default open
+        details: false,
         delivery: false,
         availability: false
     });
@@ -123,10 +133,7 @@ const ProductDetail = () => {
     };
 
     const hasMultipleImages = currentVariant?.images?.length > 1;
-    let currentImageUrl = currentVariant?.images?.[currentImageIndex];
-    if (currentImageUrl && !currentImageUrl.startsWith('/') && !currentImageUrl.startsWith('http')) {
-        currentImageUrl = '/' + currentImageUrl;
-    }
+    let currentImageUrl = getValidImageUrl(currentVariant?.images?.[currentImageIndex]);
 
     return (
         <div className="product-detail-wrapper">
@@ -136,16 +143,23 @@ const ProductDetail = () => {
                         <>
                             <button className="nav-arrow left" onClick={prevImage}><ChevronLeft size={30} strokeWidth={1} /></button>
                             <button className="nav-arrow right" onClick={nextImage}><ChevronRight size={30} strokeWidth={1} /></button>
+                            <div className="carousel-dots-overlay">
+                                {currentVariant.images.map((_, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setCurrentImageIndex(idx)}
+                                        className={`dot ${idx === currentImageIndex ? 'active' : ''}`}
+                                        aria-label={`Aller à l'image ${idx + 1}`}
+                                    />
+                                ))}
+                            </div>
                         </>
                     )}
 
                     {/* Main images */}
                     {hasMultipleImages && currentVariant.images ? (
                         currentVariant.images.map((img, idx) => {
-                            let imgUrl = img;
-                            if (imgUrl && !imgUrl.startsWith('/') && !imgUrl.startsWith('http')) {
-                                imgUrl = '/' + imgUrl;
-                            }
+                            const imgUrl = getValidImageUrl(img);
                             return (
                                 <img
                                     key={idx}
@@ -231,40 +245,15 @@ const ProductDetail = () => {
                                             aria-label={`Sélectionner la couleur ${variant.color}`}
                                         >
                                             <div className={`color-thumbnail thumbnail-${variant.color.toLowerCase().replace('é', 'e').replace(' ', '-')}`} style={
-                                                variant.color === 'Noir' ? { backgroundColor: '#111' } :
-                                                    variant.color === 'Blanc' ? { backgroundColor: '#f5f5f5' } :
-                                                        variant.color === 'Gris' ? { backgroundColor: '#888' } :
-                                                            variant.color === 'Vert' ? { backgroundColor: '#2e4a22' } :
-                                                                variant.color === 'Doré' ? { backgroundColor: '#d4af37' } :
-                                                                    variant.color === 'Argent' ? { backgroundColor: '#c0c0c0' } :
-                                                                        variant.color === 'Or Rose' ? { backgroundColor: '#b76e79' } :
-                                                                            { backgroundColor: '#8c5a2b' } /* Default/Écaille */
+                                                variant.images && variant.images.length > 0
+                                                    ? { backgroundImage: `url(${getValidImageUrl(variant.images[0])})` }
+                                                    : { backgroundColor: '#e5e5e5' }
                                             }></div>
                                         </button>
                                     ))}
                                 </div>
 
-                                {/* Optionnel: Points indicateurs (dots) pour le carrousel si plusieurs images */}
-                                {hasMultipleImages && (
-                                    <div className="carousel-dots" style={{ display: 'flex', gap: '8px', marginTop: '1.5rem' }}>
-                                        {currentVariant.images.map((_, idx) => (
-                                            <button
-                                                key={idx}
-                                                onClick={() => setCurrentImageIndex(idx)}
-                                                style={{
-                                                    width: '8px',
-                                                    height: '8px',
-                                                    borderRadius: '50%',
-                                                    border: 'none',
-                                                    backgroundColor: idx === currentImageIndex ? '#000' : '#ccc',
-                                                    cursor: 'pointer',
-                                                    padding: 0
-                                                }}
-                                                aria-label={`Aller à l'image ${idx + 1}`}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
+                                {/* Optionnel: Les points du carrousel ont été déplacés sur l'image */}
                             </div>
                         )}
 
@@ -299,23 +288,14 @@ const ProductDetail = () => {
                                 <button className="btn-add-cart" style={{ flex: 1 }} onClick={handleAddToCart}>Ajouter au panier</button>
                             )}
                             <button
-                                className="btn-wishlist"
+                                className={`btn-wishlist ${isSaved ? 'saved' : ''}`}
                                 onClick={() => {
                                     toggleWishlist(product);
                                     if (!isSaved) setIsWishlistOpen(true);
                                 }}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    padding: '1rem',
-                                    border: '1px solid #000',
-                                    background: isSaved ? '#f0f0f0' : 'transparent',
-                                    cursor: 'pointer'
-                                }}
                                 aria-label={isSaved ? "Retirer des favoris" : "Ajouter aux favoris"}
                             >
-                                <Heart size={20} strokeWidth={1.5} fill={isSaved ? "#000" : "none"} color="#000" />
+                                <Heart size={20} strokeWidth={1.5} fill={isSaved ? "#fff" : "none"} color="#fff" />
                             </button>
                         </div>
 
@@ -374,13 +354,16 @@ const ProductDetail = () => {
                                 <span>Étuis offert</span>
                             </div>
                         </div>
+
+                        {/* Avis Clients Component */}
+                        <ProductReviews productId={product.id} />
                     </div>
                 </div>
             </div>
 
             {recommendations.length > 0 && (
                 <div className="product-recommendations container" style={{ marginTop: '6rem', marginBottom: '6rem' }}>
-                    <h2 className="heading-md" style={{ marginBottom: '3rem', fontSize: '1.5rem', fontWeight: 500 }}>Vous aimeriez peut-être</h2>
+                    <h2 className="heading-md" style={{ marginBottom: '3rem', fontSize: '1.5rem', fontWeight: 500 }}>Nos clients ont aussi acheté</h2>
                     <div className="shop-grid">
                         {recommendations.map(prod => (
                             <ProductCard key={prod.id} product={prod} />

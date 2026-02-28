@@ -10,6 +10,8 @@ const Shop = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const [mobileGrid, setMobileGrid] = useState('double');
+
     // Main Category State
     const [activeCategory, setActiveCategory] = useState(searchParams.get('category') || 'all');
 
@@ -53,6 +55,7 @@ const Shop = () => {
     const [availableShapes, setAvailableShapes] = useState([]);
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [activeMobilePanel, setActiveMobilePanel] = useState('filters'); // 'filters' | 'collection'
 
     useEffect(() => {
         fetchProducts();
@@ -168,8 +171,10 @@ const Shop = () => {
                     <div className="shop-banner-images">
                         {activeGender === 'Homme' ? (
                             <img src="/assets/images/solairem.png" alt={`Bannière ${activeCategory} Homme`} />
+                        ) : activeGender === 'Femme' ? (
+                            <img src="/assets/images/solairef.png" alt={`Bannière ${activeCategory} Femme`} />
                         ) : (
-                            <img src="/assets/images/solairef.png" alt={`Bannière ${activeCategory}`} />
+                            <img src="/assets/images/mix-sol.png" alt={`Bannière ${activeCategory} Mixte`} />
                         )}
                     </div>
 
@@ -179,10 +184,23 @@ const Shop = () => {
                             <button className={activeGender === 'Homme' ? 'active' : ''} onClick={() => handleGenderClick('Homme')}>Homme</button>
                             <button className={activeGender === 'all' ? 'active' : ''} onClick={() => handleGenderClick('all')}>Toute la collection</button>
                         </div>
-                        <div className="solaires-filter-toggle">
-                            <button onClick={() => setIsFilterOpen(!isFilterOpen)}>
-                                Filtres
-                            </button>
+                        <div className="solaires-filter-toggle" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div className="mobile-filter-btns" style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button className="btn-filter mobile-btn-collection" onClick={() => { setActiveMobilePanel('collection'); setIsFilterOpen(true); }}>
+                                    Collection
+                                </button>
+                                <button className="btn-filter" onClick={() => { setActiveMobilePanel('filters'); setIsFilterOpen(true); }}>
+                                    Filtres
+                                </button>
+                            </div>
+                            <div className="mobile-grid-toggle">
+                                <button className={`grid-btn ${mobileGrid === 'single' ? 'active' : ''}`} onClick={() => setMobileGrid('single')} aria-label="Affichage 1 colonne">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+                                </button>
+                                <button className={`grid-btn ${mobileGrid === 'double' ? 'active' : ''}`} onClick={() => setMobileGrid('double')} aria-label="Affichage 2 colonnes">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </>
@@ -210,18 +228,58 @@ const Shop = () => {
                             <button className={activeGender === 'Unisexe' ? 'active' : ''} onClick={() => handleGenderClick('Unisexe')}>Unisexe</button>
                         </div>
 
-                        <div className="shop-filter-toggle">
-                            <button onClick={() => setIsFilterOpen(!isFilterOpen)}>
-                                {isFilterOpen ? 'Fermer les filtres' : 'Filtres +'}
-                            </button>
+                        <div className="shop-filter-toggle" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div className="mobile-filter-btns" style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button className="btn-filter mobile-btn-collection" onClick={() => { setActiveMobilePanel('collection'); setIsFilterOpen(true); }}>
+                                    Collection
+                                </button>
+                                <button className="btn-filter" onClick={() => { setActiveMobilePanel('filters'); setIsFilterOpen(true); }}>
+                                    Filtres +
+                                </button>
+                            </div>
+                            <div className="mobile-grid-toggle">
+                                <button className={`grid-btn ${mobileGrid === 'single' ? 'active' : ''}`} onClick={() => setMobileGrid('single')} aria-label="Affichage 1 colonne">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+                                </button>
+                                <button className={`grid-btn ${mobileGrid === 'double' ? 'active' : ''}`} onClick={() => setMobileGrid('double')} aria-label="Affichage 2 colonnes">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </>
             )}
 
+            {/* MOBILE FILTER OVERLAY */}
+            {isFilterOpen && <div className="shop-filter-overlay" onClick={() => setIsFilterOpen(false)}></div>}
+
             {/* EXPANDABLE MEGA FILTER BAR */}
             {isFilterOpen && (
-                <div className="shop-mega-filter text-sans">
+                <div className={`shop-mega-filter text-sans active-panel-${activeMobilePanel}`}>
+                    <div className="mobile-filter-header">
+                        <h3>{activeMobilePanel === 'collection' ? 'Collections' : 'Filtres'}</h3>
+                        <button className="btn-close-filter" onClick={() => setIsFilterOpen(false)} aria-label="Fermer">✕</button>
+                    </div>
+
+                    <div className="filter-column mobile-only-genders">
+                        <div className="vertical-genders">
+                            {isSpecialCategory ? (
+                                <>
+                                    <button className={activeGender === 'Femme' ? 'active' : ''} onClick={() => { handleGenderClick('Femme'); setIsFilterOpen(false) }}>Femme</button>
+                                    <button className={activeGender === 'Homme' ? 'active' : ''} onClick={() => { handleGenderClick('Homme'); setIsFilterOpen(false) }}>Homme</button>
+                                    <button className={activeGender === 'all' ? 'active' : ''} onClick={() => { handleGenderClick('all'); setIsFilterOpen(false) }}>Toute la collection</button>
+                                </>
+                            ) : (
+                                <>
+                                    <button className={activeGender === 'all' ? 'active' : ''} onClick={() => { handleGenderClick('all'); setIsFilterOpen(false) }}>Tous</button>
+                                    <button className={activeGender === 'Femme' ? 'active' : ''} onClick={() => { handleGenderClick('Femme'); setIsFilterOpen(false) }}>Femme</button>
+                                    <button className={activeGender === 'Homme' ? 'active' : ''} onClick={() => { handleGenderClick('Homme'); setIsFilterOpen(false) }}>Homme</button>
+                                    <button className={activeGender === 'Unisexe' ? 'active' : ''} onClick={() => { handleGenderClick('Unisexe'); setIsFilterOpen(false) }}>Unisexe</button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
                     <div className="filter-column">
                         <h4>Couleur</h4>
                         {availableColors.length === 0 ? <span className="text-small text-muted">Aucune</span> : availableColors.map(color => (
@@ -293,7 +351,7 @@ const Shop = () => {
             {loading ? (
                 <div className="loading-state">Chargement de la collection...</div>
             ) : filteredProducts.length > 0 ? (
-                <div className="shop-grid">
+                <div className={`shop-grid mobile-${mobileGrid}`}>
                     {filteredProducts.map(product => (
                         <ProductCard key={product.id} product={product} />
                     ))}

@@ -53,7 +53,7 @@
     font-weight: 500;
 }
 
-.shop-filter-toggle button {
+.shop-filter-toggle .btn-filter {
     background: transparent;
     border: 1px solid #ccc;
     padding: 0.4rem 1rem;
@@ -63,7 +63,7 @@
     transition: all 0.3s;
 }
 
-.shop-filter-toggle button:hover {
+.shop-filter-toggle .btn-filter:hover {
     border-color: #000;
 }
 
@@ -107,37 +107,48 @@
 
 .solaires-genders {
     display: flex;
-    gap: 1.5rem;
+    gap: 3rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+    max-width: 100%;
+}
+
+.solaires-genders::-webkit-scrollbar {
+    display: none;
 }
 
 .solaires-genders button {
     background: transparent;
     border: none;
-    color: #000;
+    color: #888;
     cursor: pointer;
-    padding: 0.4rem 1.5rem;
-    transition: all 0.3s ease;
+    padding: 0;
+    transition: color 0.3s ease;
     font-family: var(--font-sans);
     font-weight: 400;
-    border: 1px solid transparent;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.solaires-genders button:hover {
+    color: #000;
 }
 
 .solaires-genders button.active {
-    background: #000;
-    color: #fff;
-    font-weight: 500;
+    color: #000;
+    font-weight: 600;
 }
 
-.solaires-genders button:not(.active) {
-    border-right: 1px solid #ccc;
-    /* Add pipe separator if they mimic the mockup exactly, but simple border works well */
+.solaires-filter-toggle {
+    flex-shrink: 0;
 }
 
-.solaires-genders button:last-child {
-    border-right: none;
-}
-
-.solaires-filter-toggle button {
+.solaires-filter-toggle .btn-filter {
     background: transparent;
     border: 1px solid #000;
     padding: 0.4rem 2rem;
@@ -147,7 +158,7 @@
     cursor: pointer;
 }
 
-.solaires-filter-toggle button:hover {
+.solaires-filter-toggle .btn-filter:hover {
     background: #000;
     color: #fff;
 }
@@ -275,6 +286,30 @@
     margin-top: 2rem;
 }
 
+/* MOBILE GRID TOGGLE */
+.mobile-grid-toggle {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mobile-grid-toggle .grid-btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    cursor: pointer !important;
+    color: #ccc !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.mobile-grid-toggle .grid-btn:hover,
+.mobile-grid-toggle .grid-btn.active {
+    color: #000 !important;
+}
+
 /* STATES */
 .loading-state,
 .empty-state {
@@ -300,20 +335,169 @@
     background: #333;
 }
 
+/* MOBILE PANEL STYLES (HIDDEN ON DESKTOP) */
+.shop-filter-overlay,
+.mobile-filter-header,
+.mobile-only-genders,
+.mobile-btn-collection {
+    display: none;
+}
+
 /* RESPONSIVE */
 @media (max-width: 900px) {
-    .shop-mega-filter {
-        grid-template-columns: repeat(2, 1fr);
+
+    .shop-genders,
+    .solaires-genders {
+        display: none !important;
+        /* Hide horizontal genders in top bar entirely */
     }
 
-    .shop-top-bar {
+    .shop-filter-overlay {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 998;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .shop-mega-filter {
+        display: block;
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 85vw;
+        max-width: 400px;
+        height: 100vh;
+        background: #fff;
+        z-index: 999;
+        margin: 0;
+        border-radius: 0;
+        padding: 2rem 1.5rem 6rem 1.5rem;
+        overflow-y: auto;
+        animation: slideInRight 0.3s ease forwards;
+        box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eaeaea;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .mobile-filter-header h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .btn-close-filter {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #000;
+        padding: 0;
+    }
+
+    .mobile-only-genders {
+        display: block;
+        margin-bottom: 2rem;
+    }
+
+    .active-panel-collection .filter-column:not(.mobile-only-genders) {
+        display: none;
+    }
+
+    .active-panel-filters .mobile-only-genders {
+        display: none;
+    }
+
+    .vertical-genders {
+        display: flex;
         flex-direction: column;
         align-items: flex-start;
+        gap: 1.2rem;
+    }
+
+    .vertical-genders button {
+        background: none;
+        border: none;
+        color: #555;
+        font-size: 0.95rem;
+        font-family: var(--font-sans);
+        cursor: pointer;
+        padding: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .vertical-genders button.active {
+        color: #000;
+        font-weight: 600;
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+        }
+
+        to {
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .shop-top-bar,
+    .shop-solaires-bar {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
         gap: 1rem;
     }
 
+    .shop-categories {
+        width: 100%;
+    }
+
+    .mobile-btn-collection {
+        display: block;
+    }
+
+    .solaires-filter-toggle,
     .shop-filter-toggle {
-        align-self: flex-start;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .mobile-grid-toggle {
+        display: flex;
+    }
+
+    .shop-grid.mobile-single {
+        grid-template-columns: 1fr;
+    }
+
+    .shop-grid.mobile-double {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
     }
 }
 
@@ -322,10 +506,34 @@
         grid-template-columns: 1fr;
     }
 
-    .shop-categories,
-    .shop-genders {
+    .shop-categories {
         overflow-x: auto;
         width: 100%;
         padding-bottom: 0.5rem;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .shop-categories::-webkit-scrollbar {
+        display: none;
+    }
+
+    .shop-genders {
+        display: none;
+        /* Hide default genders on mobile */
+    }
+
+    .solaires-genders {
+        gap: 1.5rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .shop-title-solaires {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .shop-banner-images {
+        height: 200px;
     }
 }

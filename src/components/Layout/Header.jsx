@@ -71,7 +71,7 @@ const Header = () => {
 
                 <div className="header-ona-logo">
                     <Link to="/">
-                        <h2>studio ona</h2>
+                        <h2 style={{ fontFamily: 'var(--font-walkway)', fontWeight: 'normal', letterSpacing: 'normal' }}>studio ona</h2>
                     </Link>
                 </div>
 
@@ -103,15 +103,9 @@ const Header = () => {
                     <Link to="/shop?category=Solaires" className="mobile-nav-link text-serif">Solaires</Link>
                     <Link to="/shop?category=Optiques" className="mobile-nav-link text-serif">Optiques</Link>
                     <Link to="/shop" className="mobile-nav-link text-serif">Boutique</Link>
-                    <Link to="/collections" className="mobile-nav-link text-serif">Collections</Link>
                     <Link to="/about" className="mobile-nav-link text-serif">À propos</Link>
+                    <Link to="/compte" className="mobile-nav-link text-serif">Mon Compte</Link>
                 </nav>
-                <div className="mobile-nav-footer" style={{ flexDirection: 'row', gap: '2.5rem' }}>
-                    <Link to="/compte" className="mobile-nav-link-small" aria-label="Compte" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <User size={24} strokeWidth={1.5} />
-                        <span>Mon Compte</span>
-                    </Link>
-                </div>
             </div>
 
             <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />

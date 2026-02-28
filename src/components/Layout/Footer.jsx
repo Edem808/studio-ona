@@ -7,7 +7,7 @@ const Footer = () => {
         <footer className="footer-ona">
             <div className="container footer-ona-grid">
                 <div className="footer-ona-left">
-                    <h2 className="footer-ona-logo">studio ona</h2>
+                    <h2 className="footer-ona-logo" style={{ fontFamily: 'var(--font-walkway)', fontWeight: 'normal', letterSpacing: 'normal' }}>studio ona</h2>
                     <form className="footer-ona-newsletter" onSubmit={(e) => e.preventDefault()}>
                         <p>Inscrivez-vous à notre newsletter pour recevoir nos dernières actualités et offres spéciales.</p>
                         <div className="footer-ona-newsletter-input">
@@ -63,7 +63,7 @@ const Footer = () => {
                 </div>
             </div>
             <div className="footer-ona-bottom container">
-                <p>© 2026 studio ona - Tous droits réservés.</p>
+                <p>© 2026 <span style={{ fontFamily: 'var(--font-walkway)' }}>studio ona</span> - Tous droits réservés.</p>
             </div>
         </footer>
     );

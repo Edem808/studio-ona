@@ -1,84 +1,51 @@
 .collection-highlight {
-    padding: 4rem 5%;
+    padding: 8rem 5%;
+    text-align: left;
+}
+
+.highlight-header {
+    margin-bottom: 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.highlight-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #000;
+    margin: 0;
 }
 
 .highlight-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    background-color: var(--color-bg);
-    min-height: 700px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 4rem;
 }
 
-.highlight-text-col {
-    background-color: var(--color-bg-dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4rem;
-    text-align: center;
+.shop-all-link {
+    display: inline-block;
+    text-decoration: underline;
+    text-underline-offset: 0.5rem;
+    color: #000;
+    font-weight: 700;
+    transition: color var(--transition-fast);
 }
 
-.highlight-text-content {
-    max-width: 400px;
-    display: flex;
-    color: var(--color-text-white);
-    flex-direction: column;
-    align-items: center;
+.shop-all-link:hover {
+    color: var(--color-gray);
 }
 
-.highlight-text-content .title {
-    margin-bottom: 3rem;
-    color: var(--color-text-white);
-    letter-spacing: 0.1em;
+@media (max-width: 1024px) {
+    .highlight-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 3rem 1.5rem;
+    }
 }
 
-.highlight-product-image {
-    width: 250px;
-    height: 250px;
-    margin-bottom: 3rem;
-}
-
-.placeholder-box {
-    width: 100%;
-    height: 100%;
-    background-color: var(--color-border);
-    border-radius: 5px;
-}
-
-.highlight-text-content .description {
-    font-size: 0.875rem;
-    color: var(--color-text-white);
-    line-height: 1.6;
-    margin-bottom: 2rem;
-    font-style: italic;
-}
-
-.highlight-image-main {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-.highlight-image-main img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.campaign-placeholder {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(45deg, #a79788, #8c7a6a);
-    min-height: 500px;
-}
-
-@media (max-width: 900px) {
+@media (max-width: 640px) {
     .highlight-grid {
         grid-template-columns: 1fr;
-    }
-
-    .highlight-image-main,
-    .campaign-placeholder {
-        min-height: 50vh;
     }
 }

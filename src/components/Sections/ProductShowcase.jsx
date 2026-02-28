@@ -55,7 +55,8 @@ const ProductShowcase = () => {
     return (
         <section className="product-showcase container" ref={sectionRef}>
             <div className="showcase-header">
-                <h2 className="text-small">STUDIO ONA COLLECTION PRINTEMPS ÉTÉ 2026</h2>
+                <h2>Les indispensables de l'été 2026</h2>
+                <Link to="/shop" className="shop-all-link text-small">Découvrir &rarr;</Link>
             </div>
 
             <div className="product-grid">
@@ -70,9 +71,6 @@ const ProductShowcase = () => {
                 )}
             </div>
 
-            <div className="showcase-footer">
-                <Link to="/shop" className="shop-all-link text-small">Shop All &rarr;</Link>
-            </div>
         </section>
     );
 };

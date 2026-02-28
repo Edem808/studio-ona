@@ -35,7 +35,17 @@ const ProductCard = ({ product }) => {
     }
 
     // Process URLs
-    images = images.map(img => (img && !img.startsWith('/') && !img.startsWith('http') ? '/' + img : img));
+    images = images.map(img => {
+        let processImg = img;
+        if (processImg) {
+            // Remove localhost absolute URLs so it works on mobile dev server
+            processImg = processImg.replace(/^https?:\/\/localhost(:\d+)?/i, '');
+            if (!processImg.startsWith('/') && !processImg.startsWith('http')) {
+                processImg = '/' + processImg;
+            }
+        }
+        return processImg;
+    });
     const hasMultipleImages = images.length > 1;
 
     const nextImage = (e) => {
@@ -81,7 +91,7 @@ const ProductCard = ({ product }) => {
                     </div>
                 )}
 
-                {hasMultipleImages && isHovered && (
+                {hasMultipleImages && (
                     <>
                         <button className="card-carousel-arrow left" onClick={prevImage} aria-label="Image précédente">
                             <ChevronLeft size={18} color="#000" />
