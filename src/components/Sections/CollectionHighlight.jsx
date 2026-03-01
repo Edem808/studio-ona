@@ -56,7 +56,7 @@ const CollectionHighlight = () => {
         <section className="collection-highlight container" ref={sectionRef}>
             <div className="highlight-header">
                 <h2>Collection Optiques</h2>
-                <Link to="/shop?category=Optiques" className="shop-all-link text-small">Découvrir &rarr;</Link>
+                <Link to="/shop?category=Optiques" className="shop-all-link text-small">Découvrir</Link>
             </div>
 
             <div className="highlight-grid">

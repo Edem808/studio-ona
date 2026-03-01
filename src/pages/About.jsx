@@ -96,7 +96,7 @@ const About = () => {
                         </p>
                     </div>
                     <div className="about-split-image" ref={(el) => addToRefs(el, imageRefs)}>
-                        <img src="/assets/images/campaign-image.png" alt="Studio Ona Philosophy" />
+                        <img src="/assets/images/campaign-image.webp" alt="Studio Ona Philosophy" />
                     </div>
                 </div>
             </section>

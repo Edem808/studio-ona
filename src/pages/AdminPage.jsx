@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { CheckCircle2, XCircle, X } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
 import './AdminPage.css';
 
 const AdminPage = () => {
@@ -149,13 +150,25 @@ const AdminPage = () => {
                 // 1. If there are new files selected, upload them to Supabase Storage
                 if (v.imageFiles && v.imageFiles.length > 0) {
                     for (const file of v.imageFiles) {
-                        const fileExt = file.name.split('.').pop();
+
+                        // COMPRESS AND CONVERT TO WEBP
+                        const options = {
+                            maxSizeMB: 1, // Max size 1MB
+                            maxWidthOrHeight: 1600, // Max resolution
+                            useWebWorker: true,
+                            fileType: 'image/webp' // Force convert to WebP
+                        };
+                        const compressedBlob = await imageCompression(file, options);
+
+                        const fileExt = 'webp';
                         const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
                         const filePath = `${fileName}`;
 
                         const { error: uploadError, data } = await supabase.storage
                             .from('product-images')
-                            .upload(filePath, file);
+                            .upload(filePath, compressedBlob, {
+                                contentType: 'image/webp'
+                            });
 
                         if (uploadError) {
                             console.error("Storage upload error:", uploadError);

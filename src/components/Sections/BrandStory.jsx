@@ -66,7 +66,7 @@ const BrandStory = () => {
                 </div>
                 <div className="brand-image-col">
                     <div className="brand-image-main">
-                        <img src="/assets/images/campaign-image.png" alt="Campaign Image" />
+                        <img src="/assets/images/campaign-image.webp" alt="Campaign Image" />
                     </div>
                 </div>
             </div>

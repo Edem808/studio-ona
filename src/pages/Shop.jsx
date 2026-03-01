@@ -170,11 +170,11 @@ const Shop = () => {
                     <h1 className="heading-lg shop-title-solaires text-serif">{activeCategory}</h1>
                     <div className="shop-banner-images">
                         {activeGender === 'Homme' ? (
-                            <img src="/assets/images/solairem.png" alt={`Bannière ${activeCategory} Homme`} />
+                            <img src="/assets/images/solairem.webp" alt={`Bannière ${activeCategory} Homme`} />
                         ) : activeGender === 'Femme' ? (
-                            <img src="/assets/images/solairef.png" alt={`Bannière ${activeCategory} Femme`} />
+                            <img src="/assets/images/solairef.webp" alt={`Bannière ${activeCategory} Femme`} />
                         ) : (
-                            <img src="/assets/images/mix-sol.png" alt={`Bannière ${activeCategory} Mixte`} />
+                            <img src="/assets/images/mix-sol.webp" alt={`Bannière ${activeCategory} Mixte`} />
                         )}
                     </div>
 

@@ -56,7 +56,7 @@ const ProductShowcase = ({ title = "Les indispensables de l'été 2026", linkTex
         <section className="product-showcase container" ref={sectionRef}>
             <div className="showcase-header">
                 <h2>{title}</h2>
-                <Link to="/shop" className="shop-all-link text-small">{linkText} &rarr;</Link>
+                <Link to="/shop" className="shop-all-link text-small">{linkText}</Link>
             </div>
 
             <div className="product-grid">
