@@ -42,8 +42,8 @@ const HeroSection = () => {
                 <div className="hero-image-bg"></div>
             </div>
             <div className="hero-content">
-                <h1 className="hero-title text-serif" ref={textRef}>Collection Printemps Été 26</h1>
-                <div className="hero-button-wrapper" ref={subtitleRef}>
+                <div className="hero-bottom-left" ref={subtitleRef}>
+                    <h1 className="hero-title text-serif" ref={textRef}>Collection Printemps Été 26</h1>
                     <Link to="/shop" className="btn-hero-primary">Voir la collection</Link>
                 </div>
             </div>

@@ -8,6 +8,8 @@ import Collections from './pages/Collections';
 import About from './pages/About';
 import ProductDetail from './pages/ProductDetail';
 import AdminPage from './pages/AdminPage'; // Import
+import AdminLogin from './pages/AdminLogin';
+import ProtectedAdminRoute from './components/UI/ProtectedAdminRoute';
 import Wishlist from './pages/Wishlist';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
@@ -34,7 +36,8 @@ function App() {
           <Route path="/compte" element={<Account />} />
           <Route path="/collections" element={<Collections />} />
           <Route path="/about" element={<About />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<ProtectedAdminRoute><AdminPage /></ProtectedAdminRoute>} />
         </Routes>
       </main>
       <WishlistOverlay />

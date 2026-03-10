@@ -143,22 +143,40 @@ const ProductReviews = ({ productId }) => {
             )}
 
             <div className="reviews-actions">
-                <button className="btn-review-link" onClick={() => setShowForm(!showForm)}>
-                    {showForm ? 'Annuler' : (existingReview ? 'Modifier mon avis' : 'Laisser un avis')}
+                <button className="btn-review-link" onClick={() => {
+                    if (!user) {
+                        setShowForm('login');
+                    } else {
+                        setShowForm(showForm === true ? false : true);
+                    }
+                }}>
+                    {showForm === true ? 'Annuler' : (existingReview ? 'Modifier mon avis' : 'Laisser un avis')}
                 </button>
             </div>
 
-            {showForm && (
+            {showForm === 'login' && (
+                <div className="review-login-modal">
+                    <div className="review-login-modal-content">
+                        <button className="review-login-close" onClick={() => setShowForm(false)}>✕</button>
+                        <p className="review-login-icon">✍️</p>
+                        <h4 className="review-login-title">Connexion requise</h4>
+                        <p className="review-login-text">
+                            Afin de garantir l'authenticité des avis, vous devez être connecté pour laisser un commentaire.
+                        </p>
+                        <a href="/compte" className="btn-buy-now review-login-btn">Se connecter / S'inscrire</a>
+                    </div>
+                </div>
+            )}
+
+            {showForm === true && (
                 <form className="review-form" onSubmit={handleSubmit}>
                     {error && <div className="error-message">{error}</div>}
-                    {!user && <div className="auth-warning">Afin de garantir au mieux l'origine de l'avis, vous devez vous connecter pour en écrire un.</div>}
                     <div className="form-group">
                         <label>Votre prénom / nom d'affichage</label>
                         <input
                             type="text"
                             value={userName}
                             onChange={(e) => setUserName(e.target.value)}
-                            disabled={!user}
                             required
                         />
                     </div>
@@ -183,12 +201,11 @@ const ProductReviews = ({ productId }) => {
                             rows="4"
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
-                            disabled={!user}
                             placeholder="Que pensez-vous de cet article ?"
                             required
                         ></textarea>
                     </div>
-                    <button type="submit" className="btn-buy-now submit-review" disabled={!user || submitting}>
+                    <button type="submit" className="btn-buy-now submit-review" disabled={submitting}>
                         {submitting ? 'Envoi...' : (existingReview ? 'Mettre à jour mon avis' : 'Envoyer mon avis')}
                     </button>
                 </form>

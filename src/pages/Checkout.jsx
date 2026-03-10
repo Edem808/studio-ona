@@ -21,7 +21,7 @@ const STRIPE_SECRET_KEY = import.meta.env.VITE_STRIPE_SECRET_KEY || ''; // Must 
 
 const stripePromise = loadStripe(STRIPE_PUBLIC_KEY);
 
-const CheckoutForm = () => {
+const CheckoutForm = ({ discount = 0 }) => {
     const stripe = useStripe();
     const elements = useElements();
     const navigate = useNavigate();
@@ -41,6 +41,7 @@ const CheckoutForm = () => {
     });
 
     const totalAmount = getCartTotal();
+    const finalAmount = totalAmount - discount;
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -60,7 +61,7 @@ const CheckoutForm = () => {
             // --- 1. Client-Side Payment Intent Creation (HACK FOR PROJECT) ---
             // Normally this is completely forbidden on the frontend.
             // We are calling the Stripe API directly from React using the secret key.
-            const totalInCents = Math.round(totalAmount * 100);
+            const totalInCents = Math.round(finalAmount * 100);
 
             const params = new URLSearchParams({
                 amount: totalInCents.toString(),
@@ -108,7 +109,7 @@ const CheckoutForm = () => {
                     user_email: formData.email,
                     user_details: formData,
                     items: cart,
-                    total_price: totalAmount,
+                    total_price: finalAmount,
                     status: 'paid',
                     stripe_session_id: paymentIntent.id
                 };
@@ -225,7 +226,7 @@ const CheckoutForm = () => {
                 disabled={!stripe || isProcessing || cart.length === 0}
             >
                 <Lock size={18} strokeWidth={2.5} />
-                <span>{isProcessing ? 'Traitement en cours...' : `Payer ${totalAmount.toFixed(2)}€`}</span>
+                <span>{isProcessing ? 'Traitement en cours...' : `Payer ${finalAmount.toFixed(2)}€`}</span>
             </button>
 
             <div className="guarantees-list">
@@ -242,6 +243,37 @@ const CheckoutForm = () => {
 
 const Checkout = () => {
     const { cart, getCartTotal } = useCart();
+    const [promoCode, setPromoCode] = useState('');
+    const [appliedPromo, setAppliedPromo] = useState(null);
+    const [promoError, setPromoError] = useState('');
+
+    const PROMO_CODES = {
+        'RAFAEL': { discount: 1.00, label: '-100%' },
+        'PROMO10': { discount: 0.10, label: '-10%' },
+        'SUMMER20': { discount: 0.20, label: '-20%' },
+        'ONA15': { discount: 0.15, label: '-15%' },
+    };
+
+    const total = getCartTotal();
+    const discountAmount = appliedPromo ? total * appliedPromo.discount : 0;
+    const finalTotal = total - discountAmount;
+
+    const handleApplyPromo = () => {
+        const code = promoCode.trim().toUpperCase();
+        if (PROMO_CODES[code]) {
+            setAppliedPromo({ ...PROMO_CODES[code], code });
+            setPromoError('');
+        } else {
+            setPromoError('Code promo invalide.');
+            setAppliedPromo(null);
+        }
+    };
+
+    const handleRemovePromo = () => {
+        setAppliedPromo(null);
+        setPromoCode('');
+        setPromoError('');
+    };
 
     // Auto-scroll to top on mount
     useState(() => {
@@ -265,7 +297,7 @@ const Checkout = () => {
                 <div className="checkout-left">
                     <h1 className="heading-md text-serif checkout-title">Paiement Sécurisé</h1>
                     <Elements stripe={stripePromise}>
-                        <CheckoutForm />
+                        <CheckoutForm discount={discountAmount} />
                     </Elements>
                 </div>
 
@@ -317,15 +349,50 @@ const Checkout = () => {
                         <div className="summary-totals">
                             <div className="summary-row">
                                 <span>Sous-total</span>
-                                <span>{getCartTotal().toFixed(2)}€</span>
+                                <span>{total.toFixed(2)}€</span>
                             </div>
                             <div className="summary-row">
                                 <span>Expédition</span>
                                 <span>Gratuit</span>
                             </div>
+
+                            {/* Code promo */}
+                            <div className="checkout-promo-section">
+                                {appliedPromo ? (
+                                    <div className="promo-applied">
+                                        <div className="promo-applied-info">
+                                            <span>🏷️ Code <strong>{appliedPromo.code}</strong> ({appliedPromo.label})</span>
+                                        </div>
+                                        <button className="promo-remove-btn" onClick={handleRemovePromo}>Retirer</button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="promo-input-row">
+                                            <input
+                                                type="text"
+                                                className="promo-input"
+                                                placeholder="Code promo"
+                                                value={promoCode}
+                                                onChange={(e) => { setPromoCode(e.target.value); setPromoError(''); }}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleApplyPromo()}
+                                            />
+                                            <button className="promo-apply-btn" onClick={handleApplyPromo}>Appliquer</button>
+                                        </div>
+                                        {promoError && <p className="promo-error">{promoError}</p>}
+                                    </>
+                                )}
+                            </div>
+
+                            {appliedPromo && (
+                                <div className="summary-row" style={{ color: '#2a7a4b', fontWeight: 500 }}>
+                                    <span>Réduction ({appliedPromo.label})</span>
+                                    <span>-{discountAmount.toFixed(2)}€</span>
+                                </div>
+                            )}
+
                             <div className="summary-row total-row">
                                 <span>Total</span>
-                                <span>{getCartTotal().toFixed(2)}€</span>
+                                <span>{finalTotal.toFixed(2)}€</span>
                             </div>
                         </div>
                     </div>

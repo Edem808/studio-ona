@@ -31,10 +31,9 @@ const CartOverlay = () => {
 
             <div className={`cart-drawer ${isCartOpen ? 'open' : ''}`}>
                 <div className="cart-drawer-header">
-                    <div style={{ width: '24px' }}></div> {/* spacer */}
-                    <h2 className="cart-drawer-title">Panier</h2>
-                    <button className="cart-btn-close" onClick={() => setIsCartOpen(false)}>
+                    <button className="btn-close-drawer" onClick={() => setIsCartOpen(false)}>
                         <X size={24} strokeWidth={1} />
+                        <span>Fermer</span>
                     </button>
                 </div>
 

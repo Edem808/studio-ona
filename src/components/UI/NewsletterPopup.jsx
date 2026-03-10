@@ -6,6 +6,7 @@ const NewsletterPopup = () => {
     const [isVisible, setIsVisible] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
     const [email, setEmail] = useState('');
+    const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
         // Check if we should show the popup
@@ -32,9 +33,12 @@ const NewsletterPopup = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Here you would typically send the email to your backend/newsletter service
-        console.log('Newsletter subscription for:', email);
-        handleClose();
+        setSubmitted(true);
+        localStorage.setItem('newsletterClosed', 'true');
+        // Auto-close after 3 seconds
+        setTimeout(() => {
+            handleClose();
+        }, 3000);
     };
 
     if (!isVisible) return null;
@@ -46,27 +50,37 @@ const NewsletterPopup = () => {
             </button>
 
             <div className="newsletter-content">
-                <h3 className="newsletter-title text-sans">
-                    10% de réduction<br />sur votre première commande
-                </h3>
-
-                <p className="newsletter-subtitle text-sans">
-                    Nouveautés, exclusivités et inspirations.<br />Directement dans votre boîte mail.
-                </p>
-
-                <form className="newsletter-form" onSubmit={handleSubmit}>
-                    <input
-                        type="email"
-                        placeholder="VOTRE EMAIL"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="newsletter-input text-sans"
-                    />
-                    <button type="submit" className="newsletter-submit text-sans">
-                        S'INSCRIRE
-                    </button>
-                </form>
+                {submitted ? (
+                    <div className="newsletter-confirmation">
+                        <div className="newsletter-check">✓</div>
+                        <h3 className="newsletter-title text-sans">Merci !</h3>
+                        <p className="newsletter-subtitle text-sans">
+                            Votre inscription est confirmée.<br />Bienvenue dans la communauté Studio Ona.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        <h3 className="newsletter-title text-sans">
+                            10% de réduction<br />sur votre première commande
+                        </h3>
+                        <p className="newsletter-subtitle text-sans">
+                            Nouveautés, exclusivités et inspirations.<br />Directement dans votre boîte mail.
+                        </p>
+                        <form className="newsletter-form" onSubmit={handleSubmit}>
+                            <input
+                                type="email"
+                                placeholder="VOTRE EMAIL"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                className="newsletter-input text-sans"
+                            />
+                            <button type="submit" className="newsletter-submit text-sans">
+                                S'INSCRIRE
+                            </button>
+                        </form>
+                    </>
+                )}
             </div>
         </div>
     );

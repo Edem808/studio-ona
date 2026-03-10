@@ -19,6 +19,19 @@
     z-index: -1;
 }
 
+.hero-image-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(17, 44, 44, 0.45);
+    z-index: 1;
+    pointer-events: none;
+}
+
+
 .hero-image-bg {
     width: 100%;
     height: 100%;
@@ -39,9 +52,21 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    align-self: flex-start;
     justify-content: center;
     color: var(--color-white);
     z-index: 10;
+}
+
+.hero-bottom-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.hero-bottom-left .btn-hero-primary {
+    align-self: flex-start;
 }
 
 .hero-title {
@@ -50,16 +75,8 @@
     font-weight: 500;
     letter-spacing: -0.05em;
     margin: 0;
-    padding-bottom: 2rem;
-    /* Give space so it's not perfectly mathematically centered but visually pleasing */
     text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     text-align: center;
-    width: 100%;
-}
-
-.hero-button-wrapper {
-    position: relative;
-    z-index: 20;
 }
 
 .btn-hero-primary {
