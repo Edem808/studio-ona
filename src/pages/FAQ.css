@@ -1,0 +1,126 @@
+.faq-page {
+    padding-bottom: 6rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.faq-heading {
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.faq-intro {
+    text-align: center;
+    color: #666;
+    margin-bottom: 4rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.faq-section {
+    margin-bottom: 3rem;
+}
+
+.faq-category-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #eaeaea;
+    padding-bottom: 0.5rem;
+    color: #333;
+}
+
+.faq-accordion-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.faq-accordion-item {
+    border-bottom: 1px solid #eaeaea;
+}
+
+.faq-accordion-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 1.25rem 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #000;
+    font-family: inherit;
+    transition: color 0.3s ease;
+}
+
+.faq-accordion-btn:hover {
+    color: #666;
+}
+
+.faq-accordion-icon {
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    color: #333;
+}
+
+.faq-accordion-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.faq-accordion-content {
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out;
+}
+
+.faq-accordion-a {
+    padding-bottom: 1.5rem;
+    padding-right: 2rem;
+    color: #555;
+    line-height: 1.6;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.faq-contact {
+    text-align: center;
+    margin-top: 5rem;
+    padding: 3rem 2rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.faq-contact h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.faq-contact p {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .faq-heading {
+        font-size: 2.5rem;
+    }
+
+    .faq-category-title {
+        font-size: 1.25rem;
+    }
+
+    .faq-accordion-btn {
+        font-size: 1rem;
+        padding-right: 1rem;
+    }
+
+    .faq-accordion-a {
+        padding-right: 1rem;
+        font-size: 0.95rem;
+    }
+}

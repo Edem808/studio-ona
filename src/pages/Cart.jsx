@@ -102,7 +102,7 @@ const Cart = () => {
                                 <span>{formattedTotal}</span>
                             </div>
 
-                            <Link to="/checkout" className="cart-page-checkout-btn" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>Procéder au paiement</Link>
+                            <Link to="/checkout" className="cart-page-checkout-btn" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>Finaliser la commande</Link>
 
                             <div className="payment-icons">
                                 {/* Visual placeholders for payment methods */}

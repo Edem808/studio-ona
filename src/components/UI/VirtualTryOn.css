@@ -1,0 +1,164 @@
+.vto-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0;
+    animation: vtoFadeIn 0.3s ease forwards;
+}
+
+@keyframes vtoFadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+.vto-container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    height: 80vh;
+    max-height: 800px;
+    background-color: #000;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.vto-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 50;
+    /* Increased to stay above AR */
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
+    color: white;
+}
+
+.vto-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.vto-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    backdrop-filter: blur(4px);
+    pointer-events: auto;
+    /* Ensure clickable over AR */
+}
+
+.vto-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.vto-video-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+    overflow: hidden;
+}
+
+/* Ensure the injected MindAR video and canvas are stacked correctly without forcing dimensions */
+.vto-video-container>video {
+    z-index: 1 !important;
+}
+
+.vto-video-container>canvas {
+    z-index: 2 !important;
+    pointer-events: none !important;
+}
+
+.vto-loading {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: white;
+    z-index: 5;
+}
+
+.vto-loader-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: vtoSpin 1s linear infinite;
+}
+
+@keyframes vtoSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.vto-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    z-index: 50;
+    /* Increased to stay above AR */
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+    pointer-events: none;
+}
+
+.vto-info-badge {
+    background: rgba(255, 255, 255, 0.9);
+    color: #111;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    pointer-events: auto;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .vto-container {
+        width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+}

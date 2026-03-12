@@ -28,8 +28,6 @@ const WishlistOverlay = () => {
                         <X size={24} strokeWidth={1} />
                         <span>Fermer</span>
                     </button>
-                    {/* The mockup shows icons here but since it's already an overlay, 
-                        we can just keep the close button on the left as requested */}
                 </div>
 
                 <div className="wishlist-drawer-content">

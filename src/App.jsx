@@ -18,6 +18,16 @@ import Account from './pages/Account';
 import WishlistOverlay from './components/UI/WishlistOverlay';
 import CartOverlay from './components/UI/CartOverlay';
 import NewsletterPopup from './components/UI/NewsletterPopup';
+import CGV from './pages/CGV';
+import CGU from './pages/CGU';
+import Confidentialite from './pages/Confidentialite';
+import MentionsLegales from './pages/MentionsLegales';
+import FAQ from './pages/FAQ';
+import Contact from './pages/Contact';
+import Magasin from './pages/Magasin';
+
+
+
 
 function App() {
   return (
@@ -38,6 +48,13 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<ProtectedAdminRoute><AdminPage /></ProtectedAdminRoute>} />
+          <Route path="/cgv" element={<CGV />} />
+          <Route path="/cgu" element={<CGU />} />
+          <Route path="/confidentialite" element={<Confidentialite />} />
+          <Route path="/mentions-legales" element={<MentionsLegales />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/magasin" element={<Magasin />} />
         </Routes>
       </main>
       <WishlistOverlay />

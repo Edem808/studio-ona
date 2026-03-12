@@ -1,0 +1,323 @@
+/* Magasin Page Styles */
+
+.magasin-page {
+    padding-bottom: 0;
+}
+
+/* Hero Section */
+.magasin-hero {
+    height: 70vh;
+    min-height: 500px;
+    background-color: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+    /* Optional: Add a subtle background image here with an overlay */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1555529902-5261145633bf?q=80&w=2670&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    padding-top: 80px;
+    /* Offset for header */
+}
+
+.magasin-hero-content {
+    max-width: 800px;
+    animation: fadeIn 1s ease-out;
+}
+
+.magasin-hero-content h1 {
+    color: #fff;
+    margin-bottom: 1.5rem;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+}
+
+.magasin-hero-subtitle {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    margin-bottom: 3rem;
+    color: #f5f5f5;
+    font-weight: 300;
+}
+
+.magasin-hero-btn {
+    background-color: #fff;
+    color: #000;
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    display: inline-block;
+}
+
+.magasin-hero-btn:hover {
+    background-color: #f0f0f0;
+}
+
+/* Experience Section */
+.magasin-experience {
+    padding: 3rem 0;
+}
+
+.magasin-experience-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+}
+
+.magasin-experience-text h2 {
+    margin-bottom: 2rem;
+}
+
+.magasin-experience-text .paragraph {
+    color: #555;
+    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+
+.magasin-image-placeholder {
+    width: 100%;
+    aspect-ratio: 4/5;
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    border-radius: 4px;
+}
+
+.magasin-image-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #ccc;
+}
+
+/* Services Section */
+.magasin-services {
+    padding: 5rem 0;
+    background-color: #fafafa;
+}
+
+.magasin-services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+}
+
+.magasin-service-card {
+    background: #fff;
+    padding: 3rem 2rem;
+    text-align: center;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    transition: transform 0.3s ease;
+}
+
+.magasin-service-card:hover {
+    transform: translateY(-5px);
+}
+
+.magasin-service-icon-wrapper {
+    width: 70px;
+    height: 70px;
+    background-color: #000;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem auto;
+}
+
+.magasin-service-icon {
+    font-size: 2rem;
+}
+
+.magasin-service-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.magasin-service-card p {
+    color: #666;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* Practical Info */
+.magasin-practical {
+    padding: 6rem 0;
+}
+
+.magasin-practical-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: stretch;
+}
+
+.magasin-map-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    background-color: #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+}
+
+.magasin-practical-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.magasin-practical-details h2 {
+    margin-bottom: 3rem;
+}
+
+.practical-item {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    align-items: flex-start;
+}
+
+.practical-icon {
+    font-size: 1.5rem;
+    color: #000;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+}
+
+.practical-item strong {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.practical-item p,
+.practical-item ul {
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.practical-item ul {
+    list-style: none;
+    padding: 0;
+}
+
+.practical-item ul li {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+    min-width: 250px;
+}
+
+.practical-item ul li span {
+    font-weight: 500;
+}
+
+.magasin-itinerary-btn {
+    margin-top: 1rem;
+    display: inline-block;
+    padding: 1rem 2.5rem;
+    border: 1px solid #000;
+    color: #000;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+    text-decoration: none;
+}
+
+.magasin-itinerary-btn:hover {
+    background-color: #000;
+    color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .magasin-services-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .magasin-experience-grid,
+    .magasin-practical-grid {
+        gap: 3rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .magasin-hero {
+        min-height: 400px;
+        height: 50vh;
+    }
+
+    .magasin-hero-content h1 {
+        font-size: 2.2rem;
+    }
+
+    .magasin-experience {
+        padding: 2rem 0;
+    }
+
+    .magasin-services {
+        padding: 3rem 0;
+    }
+
+    .magasin-practical {
+        padding: 3rem 0;
+    }
+
+    .magasin-experience-grid,
+    .magasin-practical-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .magasin-experience-text {
+        order: 2;
+    }
+
+    .magasin-experience-image {
+        order: 1;
+    }
+
+    .magasin-services-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .magasin-service-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .practical-item {
+        margin-bottom: 2rem;
+    }
+
+    .practical-item ul li {
+        min-width: 100%;
+        flex-direction: column;
+        margin-bottom: 0.5rem;
+    }
+
+    .practical-item ul li span {
+        margin-bottom: 0.2rem;
+    }
+
+    .magasin-map-placeholder {
+        min-height: 250px;
+    }
+}

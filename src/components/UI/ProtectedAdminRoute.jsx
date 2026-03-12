@@ -30,7 +30,7 @@ const ProtectedAdminRoute = ({ children }) => {
                 gap: '1rem',
                 fontFamily: 'var(--font-sans)'
             }}>
-                <h2 style={{ fontSize: '2rem' }}>⛔ Accès refusé</h2>
+                <h2 style={{ fontSize: '2rem' }}> Accès refusé</h2>
                 <p style={{ color: '#666' }}>Votre compte n'a pas les droits administrateur.</p>
                 <p style={{ color: '#999', fontSize: '0.85rem' }}>Connecté en tant que : {user.email}</p>
             </div>

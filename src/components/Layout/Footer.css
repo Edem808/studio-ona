@@ -85,6 +85,13 @@
     opacity: 0.8;
 }
 
+.footer-ona-notification {
+    color: #4ade80 !important;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    transition: opacity 0.3s ease;
+}
+
 .footer-ona-socials {
     display: flex;
     gap: 1.5rem;

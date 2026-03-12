@@ -118,7 +118,7 @@ const CartOverlay = () => {
                             <span className="cart-total-label">Total :</span>
                             <span className="cart-total-value">{formattedTotal}</span>
                         </div>
-                        <Link to="/checkout" className="cart-btn-checkout" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }} onClick={() => setIsCartOpen(false)}>Procéder au paiement</Link>
+                        <Link to="/checkout" className="cart-btn-checkout" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }} onClick={() => setIsCartOpen(false)}>Finaliser la commande</Link>
                         <Link to="/panier" className="cart-btn-view" onClick={() => setIsCartOpen(false)}>Voir le panier</Link>
                     </div>
                 )}

@@ -167,16 +167,28 @@ const Shop = () => {
         <div className="shop-page container">
             {isSpecialCategory ? (
                 <>
-                    <h1 className="heading-lg shop-title-solaires text-serif">{activeCategory}</h1>
-                    <div className="shop-banner-images">
-                        {activeGender === 'Homme' ? (
-                            <img src="/assets/images/solairem.webp" alt={`Bannière ${activeCategory} Homme`} />
-                        ) : activeGender === 'Femme' ? (
-                            <img src="/assets/images/solairef.webp" alt={`Bannière ${activeCategory} Femme`} />
-                        ) : (
-                            <img src="/assets/images/mix-sol.webp" alt={`Bannière ${activeCategory} Mixte`} />
-                        )}
-                    </div>
+                    <>
+                        <h1 className="heading-lg shop-title-solaires text-serif">{activeCategory}</h1>
+                        <div className="shop-banner-images">
+                            {activeCategory === 'Solaires' ? (
+                                activeGender === 'Homme' ? (
+                                    <img src="/assets/images/solairem.webp" alt={`Bannière ${activeCategory} Homme`} />
+                                ) : activeGender === 'Femme' ? (
+                                    <img src="/assets/images/solairef.webp" alt={`Bannière ${activeCategory} Femme`} />
+                                ) : (
+                                    <img src="/assets/images/mix-sol.webp" alt={`Bannière ${activeCategory} Mixte`} />
+                                )
+                            ) : activeCategory === 'Optiques' ? (
+                                activeGender === 'Homme' ? (
+                                    <img src="/assets/images/optiqueh.webp" alt={`Bannière ${activeCategory} Homme`} />
+                                ) : activeGender === 'Femme' ? (
+                                    <img src="/assets/images/optiquef.webp" alt={`Bannière ${activeCategory} Femme`} />
+                                ) : (
+                                    <img src="/assets/images/mix-optique.webp" alt={`Bannière ${activeCategory} Mixte`} />
+                                )
+                            ) : null}
+                        </div>
+                    </>
 
                     <div className="shop-solaires-bar text-sans">
                         <div className="solaires-genders">
