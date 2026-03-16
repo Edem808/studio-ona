@@ -260,7 +260,7 @@ const ProductDetail = () => {
                         )}
 
                         <div className="product-actions" style={{ display: 'flex', gap: '1rem' }}>
-                            <button className="btn-buy-now" style={{ flex: 1 }}>Acheter maintenant</button>
+
 
                             {isAdded ? (
                                 <div className="btn-add-cart success-state" style={{

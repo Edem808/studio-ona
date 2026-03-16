@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '../../context/WishlistContext';
 import { Heart, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -9,6 +9,7 @@ const ProductCard = ({ product }) => {
 
     const [isHovered, setIsHovered] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const touchStartX = useRef(null);
 
     // Check if variant 0 exists to find ID, fallback to product.id
     const variantId = product.variants && product.variants.length > 0 ? product.variants[0].id : product.id;
@@ -60,12 +61,31 @@ const ProductCard = ({ product }) => {
         setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
     };
 
+    const handleTouchStart = (e) => {
+        touchStartX.current = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = (e) => {
+        if (touchStartX.current === null) return;
+        const diff = touchStartX.current - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 40) {
+            if (diff > 0) {
+                setCurrentImageIndex((prev) => (prev + 1) % images.length);
+            } else {
+                setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+            }
+        }
+        touchStartX.current = null;
+    };
+
     return (
         <Link to={`/shop/${product.slug || product.id}`} className="product-card">
             <div
                 className="product-image-wrap"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
+                onTouchStart={hasMultipleImages ? handleTouchStart : undefined}
+                onTouchEnd={hasMultipleImages ? handleTouchEnd : undefined}
             >
                 {images.length > 0 ? (
                     images.map((img, idx) => (

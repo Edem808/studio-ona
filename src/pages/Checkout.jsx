@@ -110,7 +110,7 @@ const CheckoutForm = ({ discount = 0 }) => {
                     user_details: formData,
                     items: cart,
                     total_price: finalAmount,
-                    status: 'paid',
+                    status: 'payéx',
                     stripe_session_id: paymentIntent.id
                 };
 

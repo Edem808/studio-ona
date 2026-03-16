@@ -31,37 +31,54 @@ import Magasin from './pages/Magasin';
 
 function App() {
   return (
-    <div className="app-container">
-      <ScrollToTop />
-      <Header />
-      <main>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/shop/:slug" element={<ProductDetail />} /> {/* New Route */}
-          <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/panier" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/checkout/success" element={<CheckoutSuccess />} />
-          <Route path="/compte" element={<Account />} />
-          <Route path="/collections" element={<Collections />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<ProtectedAdminRoute><AdminPage /></ProtectedAdminRoute>} />
-          <Route path="/cgv" element={<CGV />} />
-          <Route path="/cgu" element={<CGU />} />
-          <Route path="/confidentialite" element={<Confidentialite />} />
-          <Route path="/mentions-legales" element={<MentionsLegales />} />
-          <Route path="/faq" element={<FAQ />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/magasin" element={<Magasin />} />
-        </Routes>
-      </main>
-      <WishlistOverlay />
-      <CartOverlay />
-      <NewsletterPopup />
-      <Footer />
-    </div>
+    <Routes>
+      {/* Admin — layout isolé, sans Header/Footer */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedAdminRoute>
+            <AdminPage />
+          </ProtectedAdminRoute>
+        }
+      />
+
+      {/* Toutes les autres routes — layout standard */}
+      <Route
+        path="*"
+        element={
+          <div className="app-container">
+            <ScrollToTop />
+            <Header />
+            <main>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/shop/:slug" element={<ProductDetail />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/panier" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/checkout/success" element={<CheckoutSuccess />} />
+                <Route path="/compte" element={<Account />} />
+                <Route path="/collections" element={<Collections />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/cgv" element={<CGV />} />
+                <Route path="/cgu" element={<CGU />} />
+                <Route path="/confidentialite" element={<Confidentialite />} />
+                <Route path="/mentions-legales" element={<MentionsLegales />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/magasin" element={<Magasin />} />
+              </Routes>
+            </main>
+            <WishlistOverlay />
+            <CartOverlay />
+            <NewsletterPopup />
+            <Footer />
+          </div>
+        }
+      />
+    </Routes>
   );
 }
 

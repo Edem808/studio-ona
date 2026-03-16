@@ -171,15 +171,17 @@
 
 @media (max-width: 900px) {
 
-    .card-carousel-arrow,
+    .card-carousel-arrow {
+        display: none !important;
+    }
+
     .card-carousel-indicator,
     .quick-wishlist-btn {
         opacity: 1 !important;
         transform: translateY(0) !important;
     }
 
-    .card-carousel-arrow {
-        width: 24px;
-        height: 24px;
+    .card-carousel-indicator {
+        bottom: 8px;
     }
 }

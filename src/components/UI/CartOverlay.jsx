@@ -37,6 +37,11 @@ const CartOverlay = () => {
                     </button>
                 </div>
 
+                <div className="cart-drawer-title-row">
+                    <h3 className="text-sans" style={{ fontWeight: 500 }}>Votre panier</h3>
+                    <span className="text-sans" style={{ color: '#999', fontSize: '0.9rem' }}>{cart.length} article{cart.length > 1 ? 's' : ''}</span>
+                </div>
+
                 <div className="cart-drawer-content">
                     {cart.length === 0 ? (
                         <div className="cart-drawer-empty">

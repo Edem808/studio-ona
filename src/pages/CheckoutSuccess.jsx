@@ -15,7 +15,6 @@ const CheckoutSuccess = () => {
         <div className="checkout-page container" style={{ minHeight: '60vh', paddingBottom: '100px', paddingTop: '150px' }}>
 
             <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-                <CheckCircle size={80} color="#10b981" style={{ marginBottom: '2rem', display: 'inline-block' }} />
                 <h1 className="heading-md text-serif" style={{ marginBottom: '1rem' }}>Merci pour votre commande !</h1>
                 <p className="text-sans" style={{ maxWidth: '600px', margin: '0 auto', color: '#555', lineHeight: '1.6' }}>
                     Votre paiement a été validé avec succès. Vous allez recevoir un email de confirmation contenant les détails de votre commande.

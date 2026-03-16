@@ -1,575 +1,884 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
-import { CheckCircle2, XCircle, X } from 'lucide-react';
+import {
+    CheckCircle2, XCircle, X,
+    LayoutDashboard, Package, ShoppingBag, LogOut,
+    TrendingUp, Star, Tag, ChevronRight, Plus,
+    Pencil, Trash2, Menu,
+    RefreshCw, Eye, AlertCircle, ArrowLeft, MapPin, CreditCard, User, Package2
+} from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import './AdminPage.css';
 
+/* ─────────────────────────────────────────────────────────────
+   SPARKLINE SVG — mini graphe en barres
+   ───────────────────────────────────────────────────────────── */
+const Sparkline = ({ data = [], color = '#000', height = 48 }) => {
+    if (!data.length) return null;
+    const max = Math.max(...data, 1);
+    const w = 100 / data.length;
+    return (
+        <svg viewBox={`0 0 100 ${height}`} preserveAspectRatio="none" className="sparkline-svg">
+            {data.map((v, i) => {
+                const barH = (v / max) * height;
+                return (
+                    <rect
+                        key={i}
+                        x={i * w + w * 0.15}
+                        y={height - barH}
+                        width={w * 0.7}
+                        height={barH}
+                        fill={color}
+                        rx="2"
+                        opacity={i === data.length - 1 ? 1 : 0.35 + (i / data.length) * 0.55}
+                    />
+                );
+            })}
+        </svg>
+    );
+};
+
+/* ─────────────────────────────────────────────────────────────
+   KPI CARD
+   ───────────────────────────────────────────────────────────── */
+const KpiCard = ({ icon: Icon, label, value, sub, sparkData, accentColor = '#000' }) => (
+    <div className="kpi-card">
+        <div className="kpi-top">
+            <div className="kpi-icon" style={{ background: `${accentColor}15`, color: accentColor }}>
+                <Icon size={18} />
+            </div>
+            <span className="kpi-label">{label}</span>
+        </div>
+        <div className="kpi-value">{value}</div>
+        {sub && <div className="kpi-sub">{sub}</div>}
+        {sparkData && <Sparkline data={sparkData} color={accentColor} />}
+    </div>
+);
+
+/* ─────────────────────────────────────────────────────────────
+   MAIN COMPONENT
+   ───────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   STATUS HELPER — gère les accents (payéx, expédié, etc.)
+   ───────────────────────────────────────────────────────────── */
+const STATUS_STYLES = {
+    'payéx': { bg: '#10b98115', color: '#10b981' },
+    'payé': { bg: '#10b98115', color: '#10b981' },
+    'paid': { bg: '#10b98115', color: '#10b981' },
+    'success': { bg: '#10b98115', color: '#10b981' },
+    'livré': { bg: '#6366f115', color: '#6366f1' },
+    'expédié': { bg: '#3b82f615', color: '#3b82f6' },
+    'pending': { bg: '#f59e0b15', color: '#f59e0b' },
+    'annulé': { bg: '#d9363e15', color: '#d9363e' },
+    'cancelled': { bg: '#d9363e15', color: '#d9363e' },
+    'remboursé': { bg: '#d9363e15', color: '#d9363e' },
+    'failed': { bg: '#d9363e15', color: '#d9363e' },
+};
+const getStatusStyle = (status) => {
+    const s = STATUS_STYLES[status?.toLowerCase()] || STATUS_STYLES['pending'];
+    return { background: s.bg, color: s.color };
+};
+
 const AdminPage = () => {
-    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+
+    /* ── UI state ── */
+    const [activeView, setActiveView] = useState('overview');
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     const [message, setMessage] = useState('');
-    const [formData, setFormData] = useState({
-        name: '',
-        slug: '',
-        price: '',
-        category: 'Solaires',
-        gender: 'Unisexe',
-        shape: '',
-        material: '',
-        description: '',
-        details: '',
-        isNew: false,
-        isOnSale: false,
-        salePrice: ''
-    });
-    // New state for variants: array of objects { color: '', images: '' }
-    const [variants, setVariants] = useState([{ color: '', images: '' }]);
+    const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
-    // New states for Dashboard CRUD
+    /* ── Data ── */
     const [products, setProducts] = useState([]);
-    const [editingId, setEditingId] = useState(null);
+    const [orders, setOrders] = useState([]);
+    const [selectedOrder, setSelectedOrder] = useState(null);
 
-    // Auto-hide message after 3 seconds
+    /* ── Form state ── */
+    const [editingId, setEditingId] = useState(null);
+    const [formData, setFormData] = useState({
+        name: '', slug: '', price: '', category: 'Solaires', gender: 'Unisexe',
+        shape: '', material: '', description: '', details: '',
+        isNew: false, isOnSale: false, salePrice: '', rating: '', reviewCount: ''
+    });
+    const [variants, setVariants] = useState([{ color: '', images: '', imageFiles: [] }]);
+
+    /* ── Toasts ── */
     useEffect(() => {
         if (message) {
-            const timer = setTimeout(() => {
-                setMessage('');
-            }, 3000);
-            return () => clearTimeout(timer);
+            const t = setTimeout(() => setMessage(''), 3500);
+            return () => clearTimeout(t);
         }
     }, [message]);
 
-    // Fetch products on mount
-    useEffect(() => {
-        fetchProducts();
+    /* ── Fetch ── */
+    const fetchProducts = useCallback(async () => {
+        const { data, error } = await supabase.from('products').select('*').order('id', { ascending: false });
+        if (!error) setProducts(data);
     }, []);
 
-    const fetchProducts = async () => {
-        const { data, error } = await supabase
-            .from('products')
-            .select('*')
-            .order('id', { ascending: false });
+    const fetchOrders = useCallback(async () => {
+        const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(50);
+        if (!error && data) setOrders(data);
+    }, []);
 
-        if (error) {
-            console.error("Error fetching products:", error);
-        } else {
-            setProducts(data);
-        }
+    useEffect(() => {
+        fetchProducts();
+        fetchOrders().catch(() => { }); // orders table may not exist yet
+    }, [fetchProducts, fetchOrders]);
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await fetchProducts();
+        await fetchOrders().catch(() => { });
+        setTimeout(() => setRefreshing(false), 600);
     };
+
+    const updateOrderStatus = async (orderId, newStatus) => {
+        const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
+        if (error) { setMessage('❌ Erreur mise à jour statut'); return; }
+        setMessage('✅ Statut mis à jour !');
+        await fetchOrders().catch(() => { });
+        setSelectedOrder(prev => prev?.id === orderId ? { ...prev, status: newStatus } : prev);
+    };
+
+
+    /* ── KPI derivations ── */
+    const kpiNew = products.filter(p => p.isNew).length;
+    const kpiSale = products.filter(p => p.isOnSale).length;
+    const totalVariants = products.reduce((acc, p) => acc + (p.variants?.length || 0), 0);
+    // Fake weekly distribution for sparkline (last 7 products per day bucket)
+    const sparkData = [3, 5, 4, 7, 6, products.length > 5 ? products.length - 4 : products.length, products.length];
+
+    /* ── Form helpers ── */
+    const generateSlug = (text) =>
+        text.toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase().trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-');
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-
-        let finalValue = type === 'checkbox' ? checked : value;
-
-        // Auto-append € for price fields
-        if ((name === 'price' || name === 'salePrice') && finalValue) {
-            finalValue = finalValue.replace(/[^\d.,€]/g, ''); // Keep numbers, commas, dots, euro
-        }
-
+        let val = type === 'checkbox' ? checked : value;
+        if ((name === 'price' || name === 'salePrice') && val) val = val.replace(/[^\d.,€]/g, '');
         setFormData(prev => {
-            const updated = {
-                ...prev,
-                [name]: finalValue
-            };
-
-            // Auto-generate slug when name changes, if slug hasn't been manually touched or we are creating a new one
-            if (name === 'name' && !editingId && !prev.slugModified) {
-                updated.slug = generateSlug(value);
-            }
-
-            // Mark slug as user-modified if they explicitly edit the slug field
-            if (name === 'slug') {
-                updated.slugModified = true;
-            }
-
+            const updated = { ...prev, [name]: val };
+            if (name === 'name' && !editingId && !prev.slugModified) updated.slug = generateSlug(value);
+            if (name === 'slug') updated.slugModified = true;
             return updated;
         });
     };
 
-    const generateSlug = (text) => {
-        return text
-            .toString()
-            .normalize('NFD')                   // split an accented letter in the base letter and the acent
-            .replace(/[\u0300-\u036f]/g, '')   // remove all previously split accents
-            .toLowerCase()
-            .trim()
-            .replace(/\s+/g, '-')
-            .replace(/[^\w-]+/g, '')
-            .replace(/--+/g, '-');
-    };
-
     const handlePriceBlur = (e) => {
         const { name, value } = e.target;
-        if (value && !value.endsWith('€')) {
-            setFormData(prev => ({
-                ...prev,
-                [name]: value.trim() + '€'
-            }));
-        }
+        if (value && !value.endsWith('€')) setFormData(prev => ({ ...prev, [name]: value.trim() + '€' }));
     };
 
-    const handleVariantChange = (index, field, value) => {
-        const newVariants = [...variants];
-        newVariants[index][field] = value;
-        setVariants(newVariants);
+    const handleVariantChange = (i, field, value) => {
+        const nv = [...variants]; nv[i][field] = value; setVariants(nv);
     };
 
-    const handleVariantFiles = (index, files) => {
-        const newVariants = [...variants];
-        // Convert FileList to Array
-        newVariants[index].imageFiles = Array.from(files);
-        // We still keep the 'images' string for display or editing existing records
-        newVariants[index].images = Array.from(files).map(f => f.name).join(', ');
-        setVariants(newVariants);
+    const handleVariantFiles = (i, files) => {
+        const nv = [...variants];
+        nv[i].imageFiles = Array.from(files);
+        nv[i].images = Array.from(files).map(f => f.name).join(', ');
+        setVariants(nv);
     };
 
-    const addVariantRow = () => {
-        setVariants([...variants, { color: '', images: '', imageFiles: [] }]);
-    };
+    const addVariantRow = () => setVariants([...variants, { color: '', images: '', imageFiles: [] }]);
+    const removeVariantRow = (i) => setVariants(variants.filter((_, idx) => idx !== i));
 
-    const removeVariantRow = (index) => {
-        const newVariants = variants.filter((_, i) => i !== index);
-        setVariants(newVariants);
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage('');
-
-        try {
-            // Process the variants payload
-            const processedVariants = [];
-
-            for (const v of variants) {
-                const colorTrimmed = v.color.trim();
-                if (!colorTrimmed) continue;
-
-                let imageUrls = [];
-
-                // 1. If there are new files selected, upload them to Supabase Storage
-                if (v.imageFiles && v.imageFiles.length > 0) {
-                    for (const file of v.imageFiles) {
-
-                        // COMPRESS AND CONVERT TO WEBP
-                        const options = {
-                            maxSizeMB: 1, // Max size 1MB
-                            maxWidthOrHeight: 1600, // Max resolution
-                            useWebWorker: true,
-                            fileType: 'image/webp' // Force convert to WebP
-                        };
-                        const compressedBlob = await imageCompression(file, options);
-
-                        const fileExt = 'webp';
-                        const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
-                        const filePath = `${fileName}`;
-
-                        const { error: uploadError, data } = await supabase.storage
-                            .from('product-images')
-                            .upload(filePath, compressedBlob, {
-                                contentType: 'image/webp'
-                            });
-
-                        if (uploadError) {
-                            console.error("Storage upload error:", uploadError);
-                            throw new Error("L'upload des images a échoué.");
-                        }
-
-                        // Retrieve the public URL
-                        const { data: publicURLData } = supabase.storage
-                            .from('product-images')
-                            .getPublicUrl(filePath);
-
-                        imageUrls.push(publicURLData.publicUrl);
-                    }
-                }
-                // 2. If no new files, but we have existing text URLs (e.g. while editing)
-                else if (v.images) {
-                    imageUrls = v.images.split(',').map(img => img.trim()).filter(Boolean);
-                }
-
-                processedVariants.push({
-                    color: colorTrimmed,
-                    images: imageUrls
-                });
-            }
-
-            if (processedVariants.length === 0) {
-                throw new Error("Vous devez ajouter au moins une variante avec une couleur et une image.");
-            }
-
-            // Ensure price fields end with €
-            let finalPrice = formData.price;
-            let finalSalePrice = formData.salePrice;
-            if (finalPrice && !finalPrice.endsWith('€')) finalPrice += '€';
-            if (finalSalePrice && !finalSalePrice.endsWith('€')) finalSalePrice += '€';
-
-            const productPayload = {
-                name: formData.name,
-                slug: formData.slug || generateSlug(formData.name),
-                price: finalPrice,
-                category: formData.category,
-                gender: formData.gender,
-                shape: formData.shape,
-                material: formData.material,
-                description: formData.description,
-                details: formData.details,
-                isNew: formData.isNew,
-                isOnSale: formData.isOnSale,
-                salePrice: formData.isOnSale ? finalSalePrice : null,
-                variants: processedVariants,
-                rating: formData.rating ? parseFloat(formData.rating) : null,
-                reviewCount: formData.reviewCount ? parseInt(formData.reviewCount) : null
-            };
-
-            if (editingId) {
-                // UPDATE existing product
-                const { error } = await supabase
-                    .from('products')
-                    .update(productPayload)
-                    .eq('id', editingId);
-
-                if (error) throw error;
-                setMessage('✅ Produit mis à jour avec succès !');
-            } else {
-                // INSERT new product
-                const { error } = await supabase
-                    .from('products')
-                    .insert([productPayload]);
-
-                if (error) throw error;
-                setMessage('✅ Produit ajouté avec succès !');
-            }
-
-            // Reset form without clearing the success message
-            resetForm(false);
-            // Refresh list
-            fetchProducts();
-        } catch (error) {
-            console.error('Erreur lors de l\'opération :', error);
-            setMessage(`❌ Erreur: ${error.message || 'Impossible d\'enregistrer le produit'}`);
-        } finally {
-            setLoading(false);
-        }
+    const resetForm = (clearMsg = true) => {
+        setEditingId(null);
+        setFormData({ name: '', slug: '', price: '', category: 'Solaires', gender: 'Unisexe', shape: '', material: '', description: '', details: '', isNew: false, isOnSale: false, salePrice: '', rating: '', reviewCount: '' });
+        setVariants([{ color: '', images: '', imageFiles: [] }]);
+        if (clearMsg) setMessage('');
     };
 
     const handleEdit = (product) => {
         setEditingId(product.id);
         setFormData({
-            name: product.name,
-            slug: product.slug || '',
-            price: product.price,
-            category: product.category || 'Solaires',
-            gender: product.gender || 'Unisexe',
-            shape: product.shape || '',
-            material: product.material || '',
-            description: product.description || '',
-            details: product.details || '',
-            isNew: product.isNew || false,
-            isOnSale: product.isOnSale || false,
-            salePrice: product.salePrice || '',
-            rating: product.rating || '',
-            reviewCount: product.reviewCount || ''
+            name: product.name, slug: product.slug || '', price: product.price,
+            category: product.category || 'Solaires', gender: product.gender || 'Unisexe',
+            shape: product.shape || '', material: product.material || '',
+            description: product.description || '', details: product.details || '',
+            isNew: product.isNew || false, isOnSale: product.isOnSale || false,
+            salePrice: product.salePrice || '', rating: product.rating || '', reviewCount: product.reviewCount || ''
         });
-
-        // Populate variants if they exist, otherwise empty row
-        if (product.variants && product.variants.length > 0) {
-            // Join images array back into strings for the form (legacy support)
-            const editableVariants = product.variants.map(v => ({
-                color: v.color,
-                images: v.images.join(', '),
-                imageFiles: []
-            }));
-            setVariants(editableVariants);
+        if (product.variants?.length > 0) {
+            setVariants(product.variants.map(v => ({ color: v.color, images: v.images.join(', '), imageFiles: [] })));
         } else {
             setVariants([{ color: '', images: '', imageFiles: [] }]);
         }
-
-        // Scroll to form
+        setActiveView('products');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        setMessage('');
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.")) {
-            return;
-        }
+        if (!window.confirm('Supprimer ce produit ? Action irréversible.')) return;
+        const { error } = await supabase.from('products').delete().eq('id', id);
+        if (error) { setMessage('❌ Erreur: Impossible de supprimer'); return; }
+        setMessage('✅ Produit supprimé !');
+        fetchProducts();
+        if (editingId === id) resetForm(false);
+    };
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true); setMessage('');
         try {
-            const { error } = await supabase
-                .from('products')
-                .delete()
-                .eq('id', id);
-
-            if (error) throw error;
-            setMessage('✅ Produit supprimé !');
-            fetchProducts();
-
-            // If deleting the currently edited item, reset form
-            if (editingId === id) {
-                resetForm(false);
+            const processedVariants = [];
+            for (const v of variants) {
+                const colorTrimmed = v.color.trim();
+                if (!colorTrimmed) continue;
+                let imageUrls = [];
+                if (v.imageFiles?.length > 0) {
+                    for (const file of v.imageFiles) {
+                        const opts = { maxSizeMB: 1, maxWidthOrHeight: 1600, useWebWorker: true, fileType: 'image/webp' };
+                        const blob = await imageCompression(file, opts);
+                        const filePath = `${Math.random()}-${Date.now()}.webp`;
+                        const { error: upErr } = await supabase.storage.from('product-images').upload(filePath, blob, { contentType: 'image/webp' });
+                        if (upErr) throw new Error("Upload images échoué");
+                        const { data: pub } = supabase.storage.from('product-images').getPublicUrl(filePath);
+                        imageUrls.push(pub.publicUrl);
+                    }
+                } else if (v.images) {
+                    imageUrls = v.images.split(',').map(img => img.trim()).filter(Boolean);
+                }
+                processedVariants.push({ color: colorTrimmed, images: imageUrls });
             }
+            if (!processedVariants.length) throw new Error("Ajoutez au moins une variante avec couleur et image.");
+            let fp = formData.price; let fsp = formData.salePrice;
+            if (fp && !fp.endsWith('€')) fp += '€';
+            if (fsp && !fsp.endsWith('€')) fsp += '€';
+            const payload = {
+                name: formData.name, slug: formData.slug || generateSlug(formData.name),
+                price: fp, category: formData.category, gender: formData.gender,
+                shape: formData.shape, material: formData.material,
+                description: formData.description, details: formData.details,
+                isNew: formData.isNew, isOnSale: formData.isOnSale,
+                salePrice: formData.isOnSale ? fsp : null,
+                variants: processedVariants,
+                rating: formData.rating ? parseFloat(formData.rating) : null,
+                reviewCount: formData.reviewCount ? parseInt(formData.reviewCount) : null
+            };
+            if (editingId) {
+                const { error } = await supabase.from('products').update(payload).eq('id', editingId);
+                if (error) throw error;
+                setMessage('✅ Produit mis à jour !');
+            } else {
+                const { error } = await supabase.from('products').insert([payload]);
+                if (error) throw error;
+                setMessage('✅ Produit ajouté !');
+            }
+            resetForm(false);
+            fetchProducts();
         } catch (err) {
-            console.error("Error deleting:", err);
-            setMessage(`❌ Erreur: Impossible de supprimer le produit`);
+            setMessage(`❌ Erreur: ${err.message || 'Impossible d\'enregistrer'}`);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const resetForm = (clearMessage = true) => {
-        setEditingId(null);
-        setFormData({
-            name: '',
-            slug: '',
-            price: '',
-            category: 'Solaires',
-            gender: 'Unisexe',
-            shape: '',
-            material: '',
-            description: '',
-            details: '',
-            isNew: false,
-            isOnSale: false,
-            salePrice: '',
-            rating: '',
-            reviewCount: ''
-        });
-        setVariants([{ color: '', images: '', imageFiles: [] }]);
-        if (clearMessage) setMessage('');
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        navigate('/admin/login');
     };
-    return (
-        <div className="admin-page container">
-            <h1 className="text-serif heading-md">Administration</h1>
-            <p className="admin-subtitle">Tableau de bord : Gérez vos produits</p>
 
+    /* ─────────────────────────────────────────────────────────
+       RENDER
+       ───────────────────────────────────────────────────────── */
+
+    const navItems = [
+        { id: 'overview', label: 'Vue d\'ensemble', icon: LayoutDashboard },
+        { id: 'products', label: 'Produits', icon: Package },
+        { id: 'orders', label: 'Commandes', icon: ShoppingBag },
+    ];
+
+    return (
+        <div className="admin-shell">
+            {/* ── SIDEBAR ── */}
+            <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
+                <div className="sidebar-logo">
+                    <span className="sidebar-logo-text">studio ona</span>
+                    <span className="sidebar-logo-badge">Admin</span>
+                </div>
+
+                <nav className="sidebar-nav">
+                    <span className="sidebar-nav-label">Navigation</span>
+                    {navItems.map(({ id, label, icon: Icon }) => (
+                        <button
+                            key={id}
+                            className={`sidebar-nav-item ${activeView === id ? 'active' : ''}`}
+                            onClick={() => { setActiveView(id); setSidebarOpen(false); }}
+                        >
+                            <Icon size={18} />
+                            <span>{label}</span>
+                            {activeView === id && <ChevronRight size={14} className="sidebar-active-arrow" />}
+                        </button>
+                    ))}
+                </nav>
+
+                <div className="sidebar-footer">
+                    <a href="/" target="_blank" rel="noopener noreferrer" className="sidebar-view-site">
+                        <Eye size={15} />
+                        <span>Voir le site</span>
+                    </a>
+                    <button className="sidebar-logout" onClick={handleLogout}>
+                        <LogOut size={15} />
+                        <span>Déconnexion</span>
+                    </button>
+                </div>
+            </aside>
+
+            {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
+
+            {/* ── MAIN ── */}
+            <div className="admin-main">
+                {/* Top bar */}
+                <header className="admin-topbar">
+                    <button className="topbar-menu-btn" onClick={() => setSidebarOpen(o => !o)}>
+                        <Menu size={20} />
+                    </button>
+                    <div className="topbar-breadcrumb">
+                        <span className="topbar-section">{navItems.find(n => n.id === activeView)?.label}</span>
+                    </div>
+                    <button className={`topbar-refresh ${refreshing ? 'spinning' : ''}`} onClick={handleRefresh} title="Actualiser">
+                        <RefreshCw size={16} />
+                    </button>
+                </header>
+
+                {/* Content */}
+                <div className="admin-content">
+                    {/* ══ OVERVIEW ══ */}
+                    {activeView === 'overview' && (
+                        <div className="view-overview">
+                            <div className="view-header">
+                                <h1 className="view-title">Vue d'ensemble</h1>
+                                <p className="view-subtitle">Pilotez votre boutique en temps réel</p>
+                            </div>
+
+                            {/* KPI Grid */}
+                            <div className="kpi-grid">
+                                <KpiCard
+                                    icon={Package}
+                                    label="Produits"
+                                    value={products.length}
+                                    sub={`${totalVariants} variante${totalVariants > 1 ? 's' : ''} au total`}
+                                    sparkData={sparkData}
+                                    accentColor="#000"
+                                />
+                                <KpiCard
+                                    icon={Star}
+                                    label="Nouveautés"
+                                    value={kpiNew}
+                                    sub="Marqués « Nouveau »"
+                                    accentColor="#6366f1"
+                                />
+                                <KpiCard
+                                    icon={Tag}
+                                    label="En solde"
+                                    value={kpiSale}
+                                    sub="Produits soldés actifs"
+                                    accentColor="#d9363e"
+                                />
+                                <KpiCard
+                                    icon={TrendingUp}
+                                    label="Commandes"
+                                    value={orders.length || '—'}
+                                    sub={orders.length ? 'Dernières 50 commandes' : 'Table orders introuvable'}
+                                    accentColor="#10b981"
+                                />
+                            </div>
+
+                            {/* Recent products */}
+                            <div className="overview-section">
+                                <div className="section-header-row">
+                                    <h2 className="section-heading">Derniers produits ajoutés</h2>
+                                    <button className="section-link-btn" onClick={() => setActiveView('products')}>
+                                        Voir tous <ChevronRight size={14} />
+                                    </button>
+                                </div>
+                                <div className="recent-products-list">
+                                    {products.slice(0, 6).map(p => (
+                                        <div key={p.id} className="recent-product-row">
+                                            <div className="recent-product-thumb">
+                                                {p.variants?.[0]?.images?.[0] ? (
+                                                    <img
+                                                        src={p.variants[0].images[0].replace(/^https?:\/\/localhost(:\d+)?/i, '')}
+                                                        alt={p.name}
+                                                    />
+                                                ) : (
+                                                    <div className="recent-product-no-img"><Package size={16} /></div>
+                                                )}
+                                            </div>
+                                            <div className="recent-product-info">
+                                                <span className="recent-product-name">{p.name}</span>
+                                                <span className="recent-product-meta">{p.category} · {p.gender}</span>
+                                            </div>
+                                            <div className="recent-product-right">
+                                                <span className="recent-product-price">{p.price}</span>
+                                                <div className="recent-product-badges">
+                                                    {p.isNew && <span className="badge badge-new">Nouveau</span>}
+                                                    {p.isOnSale && <span className="badge badge-sale">Solde</span>}
+                                                </div>
+                                            </div>
+                                            <button className="recent-product-edit" onClick={() => handleEdit(p)} title="Modifier">
+                                                <Pencil size={14} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {products.length === 0 && (
+                                        <div className="empty-state">
+                                            <Package size={32} />
+                                            <p>Aucun produit pour l'instant</p>
+                                            <button className="btn-cta" onClick={() => setActiveView('products')}>
+                                                <Plus size={14} /> Ajouter un produit
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Orders preview */}
+                            {orders.length > 0 && (
+                                <div className="overview-section">
+                                    <div className="section-header-row">
+                                        <h2 className="section-heading">Dernières commandes</h2>
+                                        <button className="section-link-btn" onClick={() => setActiveView('orders')}>
+                                            Voir toutes <ChevronRight size={14} />
+                                        </button>
+                                    </div>
+                                    <div className="orders-table-wrap">
+                                        <table className="orders-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Client</th>
+                                                    <th>Montant</th>
+                                                    <th>Statut</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {orders.slice(0, 5).map(o => (
+                                                    <tr key={o.id}>
+                                                        <td className="order-id">#{o.id}</td>
+                                                        <td>{o.user_email || o.user_details?.email || '—'}</td>
+                                                        <td>{o.total_price != null ? `${Number(o.total_price).toFixed(2)}€` : '—'}</td>
+                                                        <td>
+                                                            <span className="order-status" style={getStatusStyle(o.status)}>
+                                                                {o.status || 'pending'}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* ══ PRODUCTS ══ */}
+                    {activeView === 'products' && (
+                        <div className="view-products">
+                            <div className="view-header">
+                                <h1 className="view-title">Produits
+                                    <span className="view-count">{products.length}</span>
+                                </h1>
+                                <p className="view-subtitle">Gérez votre catalogue</p>
+                            </div>
+
+                            <div className="products-layout">
+                                {/* List */}
+                                <div className="products-list-panel">
+                                    <div className="panel-header">
+                                        <span>Catalogue</span>
+                                        <button className="btn-add-product" onClick={resetForm}>
+                                            <Plus size={14} /> Nouveau
+                                        </button>
+                                    </div>
+                                    <div className="products-list-scroll">
+                                        {products.length === 0 ? (
+                                            <div className="empty-state">
+                                                <Package size={28} />
+                                                <p>Aucun produit</p>
+                                            </div>
+                                        ) : (
+                                            products.map(p => (
+                                                <div key={p.id} className={`product-list-item ${editingId === p.id ? 'editing' : ''}`}>
+                                                    <div className="pli-thumb">
+                                                        {p.variants?.[0]?.images?.[0] ? (
+                                                            <img src={p.variants[0].images[0].replace(/^https?:\/\/localhost(:\d+)?/i, '')} alt={p.name} />
+                                                        ) : <Package size={14} />}
+                                                    </div>
+                                                    <div className="pli-info">
+                                                        <span className="pli-name">{p.name}</span>
+                                                        <span className="pli-meta">{p.price} · {p.category}</span>
+                                                    </div>
+                                                    <div className="pli-actions">
+                                                        <button onClick={() => handleEdit(p)} title="Modifier"><Pencil size={13} /></button>
+                                                        <button onClick={() => handleDelete(p.id)} title="Supprimer" className="danger"><Trash2 size={13} /></button>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Form */}
+                                <div className="product-form-panel">
+                                    <div className="panel-header">
+                                        <span>{editingId ? 'Modifier le produit' : 'Nouveau produit'}</span>
+                                        {editingId && (
+                                            <button className="btn-cancel" onClick={resetForm}>Annuler</button>
+                                        )}
+                                    </div>
+
+                                    <form className="admin-form" onSubmit={handleSubmit}>
+                                        {/* Identité */}
+                                        <fieldset className="form-fieldset">
+                                            <legend>Identité</legend>
+                                            <div className="form-group">
+                                                <label>Nom du produit</label>
+                                                <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="ex: Ona Haze" />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Slug (URL) <small>auto-généré</small></label>
+                                                <input type="text" name="slug" value={formData.slug} onChange={handleChange} required placeholder="ex: ona-haze" />
+                                            </div>
+                                        </fieldset>
+
+                                        {/* Caractéristiques */}
+                                        <fieldset className="form-fieldset">
+                                            <legend>Caractéristiques</legend>
+                                            <div className="form-row">
+                                                <div className="form-group">
+                                                    <label>Prix</label>
+                                                    <input type="text" name="price" value={formData.price} onChange={handleChange} onBlur={handlePriceBlur} required placeholder="ex: 80" />
+                                                </div>
+                                                <div className="form-group">
+                                                    <label>Catégorie</label>
+                                                    <select name="category" value={formData.category} onChange={handleChange}>
+                                                        <option>Solaires</option>
+                                                        <option>Optiques</option>
+                                                        <option>Accessoires</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="form-row">
+                                                <div className="form-group">
+                                                    <label>Genre</label>
+                                                    <select name="gender" value={formData.gender} onChange={handleChange}>
+                                                        <option>Unisexe</option>
+                                                        <option>Homme</option>
+                                                        <option>Femme</option>
+                                                    </select>
+                                                </div>
+                                                <div className="form-group">
+                                                    <label>Forme</label>
+                                                    <select name="shape" value={formData.shape} onChange={handleChange}>
+                                                        <option value="">(Aucune)</option>
+                                                        {['Aviateur', 'Carré', 'Hexagonal', 'Ovale', 'Papillon', 'Rectangulaire', 'Rond'].map(s => <option key={s}>{s}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div className="form-group">
+                                                    <label>Matériel</label>
+                                                    <select name="material" value={formData.material} onChange={handleChange}>
+                                                        <option value="">(Aucun)</option>
+                                                        {['Acétate', 'Acétate & titane', 'Acétate & métal', 'Métal', 'Titane'].map(m => <option key={m}>{m}</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+
+                                        {/* Variantes */}
+                                        <fieldset className="form-fieldset">
+                                            <legend>Variantes & Images</legend>
+                                            {variants.map((variant, index) => (
+                                                <div key={index} className="variant-row">
+                                                    <div className="form-group flex-1">
+                                                        <label>Couleur</label>
+                                                        <input type="text" value={variant.color} onChange={(e) => handleVariantChange(index, 'color', e.target.value)} placeholder="ex: Noir" required={index === 0} />
+                                                    </div>
+                                                    <div className="form-group flex-3">
+                                                        <label>Images</label>
+                                                        <input type="file" multiple accept="image/*" onChange={(e) => handleVariantFiles(index, e.target.files)} />
+                                                        {variant.images && (
+                                                            <p className="file-hint">
+                                                                {variant.images.length > 60 ? variant.images.substring(0, 60) + '…' : variant.images}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    {variants.length > 1 && (
+                                                        <button type="button" className="btn-remove-variant" onClick={() => removeVariantRow(index)} title="Supprimer cette variante">
+                                                            <X size={14} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                            <button type="button" className="btn-add-variant" onClick={addVariantRow}>
+                                                <Plus size={14} /> Ajouter une couleur
+                                            </button>
+                                        </fieldset>
+
+                                        {/* Contenu */}
+                                        <fieldset className="form-fieldset">
+                                            <legend>Contenu</legend>
+                                            <div className="form-group">
+                                                <label>Description</label>
+                                                <textarea name="description" value={formData.description} onChange={handleChange} rows="4" required />
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Détails (accordéon)</label>
+                                                <textarea name="details" value={formData.details} onChange={handleChange} rows="3" placeholder="Texte de l'accordéon…" />
+                                            </div>
+                                        </fieldset>
+
+                                        {/* Avis & Statuts */}
+                                        <fieldset className="form-fieldset">
+                                            <legend>Avis & Statuts</legend>
+                                            <div className="form-row">
+                                                <div className="form-group">
+                                                    <label>Note (0–5)</label>
+                                                    <input type="number" step="0.1" min="0" max="5" name="rating" value={formData.rating} onChange={handleChange} placeholder="ex: 4.5" />
+                                                </div>
+                                                <div className="form-group">
+                                                    <label>Nb d'avis</label>
+                                                    <input type="number" min="0" step="1" name="reviewCount" value={formData.reviewCount} onChange={handleChange} placeholder="ex: 12" />
+                                                </div>
+                                            </div>
+                                            <div className="toggle-row">
+                                                <label className="toggle-label">
+                                                    <input type="checkbox" name="isNew" checked={formData.isNew} onChange={handleChange} />
+                                                    <span className="toggle-switch" />
+                                                    Marquer comme <strong>Nouveau</strong>
+                                                </label>
+                                                <label className="toggle-label">
+                                                    <input type="checkbox" name="isOnSale" checked={formData.isOnSale} onChange={handleChange} />
+                                                    <span className="toggle-switch" />
+                                                    Mettre en <strong style={{ color: '#d9363e' }}>Solde</strong>
+                                                </label>
+                                            </div>
+                                            {formData.isOnSale && (
+                                                <div className="form-group" style={{ marginTop: '1rem' }}>
+                                                    <label>Prix soldé</label>
+                                                    <input type="text" name="salePrice" value={formData.salePrice} onChange={handleChange} onBlur={handlePriceBlur} placeholder="Nouveau prix…" required={formData.isOnSale} />
+                                                </div>
+                                            )}
+                                        </fieldset>
+
+                                        <button type="submit" className="btn-submit" disabled={loading}>
+                                            {loading ? 'Enregistrement…' : (editingId ? 'Mettre à jour' : 'Ajouter le produit')}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ══ ORDERS ══ */}
+                    {activeView === 'orders' && (
+                        <div className="view-orders">
+                            <div className="view-header">
+                                <h1 className="view-title">Commandes
+                                    {orders.length > 0 && <span className="view-count">{orders.length}</span>}
+                                </h1>
+                                <p className="view-subtitle">Suivi et gestion des commandes clients</p>
+                            </div>
+
+                            {orders.length === 0 ? (
+                                <div className="empty-state large">
+                                    <AlertCircle size={40} />
+                                    <p>Aucune commande trouvée.</p>
+                                    <small>La table <code>orders</code> est vide ou n'existe pas encore dans Supabase.</small>
+                                </div>
+                            ) : (
+                                <div className="orders-split-layout">
+                                    {/* ── Liste ── */}
+                                    <div className="orders-list-panel">
+                                        <div className="panel-header">
+                                            <span>Toutes les commandes</span>
+                                        </div>
+                                        <div className="orders-list-scroll">
+                                            {orders.map(o => (
+                                                <div
+                                                    key={o.id}
+                                                    className={`order-list-item ${selectedOrder?.id === o.id ? 'active' : ''}`}
+                                                    onClick={() => setSelectedOrder(o)}
+                                                >
+                                                    <div className="oli-info">
+                                                        <span className="oli-id">#{o.id}</span>
+                                                        <span className="oli-name">
+                                                            {o.user_details?.firstName
+                                                                ? `${o.user_details.firstName} ${o.user_details.lastName}`
+                                                                : o.user_email || '—'}
+                                                        </span>
+                                                        <span className="oli-meta">
+                                                            {o.created_at ? new Date(o.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="oli-right">
+                                                        <span className="oli-price">
+                                                            {o.total_price != null ? `${Number(o.total_price).toFixed(2)}€` : '—'}
+                                                        </span>
+                                                        <span className="order-status" style={getStatusStyle(o.status)}>
+                                                            {o.status || 'pending'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* ── Détail ── */}
+                                    <div className={`order-detail-panel ${selectedOrder ? 'visible' : ''}`}>
+                                        {!selectedOrder ? (
+                                            <div className="order-detail-placeholder">
+                                                <ShoppingBag size={36} />
+                                                <p>Sélectionnez une commande<br />pour voir ses détails</p>
+                                            </div>
+                                        ) : (
+                                            <div className="order-detail-content">
+                                                {/* Header */}
+                                                <div className="order-detail-header">
+                                                    <div className="order-detail-title">
+                                                        <button className="order-back-btn" onClick={() => setSelectedOrder(null)} title="Fermer">
+                                                            <ArrowLeft size={16} />
+                                                        </button>
+                                                        <div>
+                                                            <span className="order-detail-id">Commande #{selectedOrder.id}</span>
+                                                            <span className="order-detail-date">
+                                                                {selectedOrder.created_at
+                                                                    ? new Date(selectedOrder.created_at).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+                                                                    : '—'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="order-status-change">
+                                                        <select
+                                                            className="status-select"
+                                                            value={selectedOrder.status || 'pending'}
+                                                            onChange={e => updateOrderStatus(selectedOrder.id, e.target.value)}
+                                                        >
+                                                            <option value="pending">En attente</option>
+                                                            <option value="payé">Payé</option>
+                                                            <option value="payéx">Payé (test)</option>
+                                                            <option value="expédié">Expédié</option>
+                                                            <option value="livré">Livré</option>
+                                                            <option value="annulé">Annulé</option>
+                                                            <option value="remboursé">Remboursé</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                {/* Blocs info */}
+                                                <div className="order-detail-grid">
+                                                    {/* Client */}
+                                                    <div className="order-info-block">
+                                                        <div className="oib-header"><User size={14} /> Client</div>
+                                                        <div className="oib-body">
+                                                            {selectedOrder.user_details?.firstName && (
+                                                                <p><strong>{selectedOrder.user_details.firstName} {selectedOrder.user_details.lastName}</strong></p>
+                                                            )}
+                                                            <p>{selectedOrder.user_email || selectedOrder.user_details?.email || '—'}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Livraison */}
+                                                    {selectedOrder.user_details?.address && (
+                                                        <div className="order-info-block">
+                                                            <div className="oib-header"><MapPin size={14} /> Adresse de livraison</div>
+                                                            <div className="oib-body">
+                                                                <p>{selectedOrder.user_details.address}</p>
+                                                                <p>{selectedOrder.user_details.zip} {selectedOrder.user_details.city}</p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Paiement */}
+                                                    <div className="order-info-block">
+                                                        <div className="oib-header"><CreditCard size={14} /> Paiement</div>
+                                                        <div className="oib-body">
+                                                            <p><strong>{selectedOrder.total_price != null ? `${Number(selectedOrder.total_price).toFixed(2)}€` : '—'}</strong></p>
+                                                            {selectedOrder.stripe_session_id && (
+                                                                <p className="stripe-id" title={selectedOrder.stripe_session_id}>
+                                                                    Stripe: {selectedOrder.stripe_session_id.substring(0, 24)}…
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Articles commandés */}
+                                                <div className="order-items-section">
+                                                    <div className="oib-header" style={{ marginBottom: '0.875rem' }}>
+                                                        <Package2 size={14} /> Articles commandés
+                                                    </div>
+                                                    {Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0 ? (
+                                                        <div className="order-items-list">
+                                                            {selectedOrder.items.map((item, idx) => {
+                                                                const product = item.product || item;
+                                                                const variant = product.variants?.find(v => v.color === item.color) || product.variants?.[0];
+                                                                const img = variant?.images?.[0] || product.image;
+                                                                const imgSrc = img ? img.replace(/^https?:\/\/localhost(:\d+)?/i, '') : null;
+                                                                const price = product.isOnSale ? product.salePrice : product.price;
+                                                                return (
+                                                                    <div key={idx} className="order-item-row">
+                                                                        <div className="order-item-img">
+                                                                            {imgSrc
+                                                                                ? <img src={imgSrc} alt={product.name} />
+                                                                                : <Package size={16} />}
+                                                                        </div>
+                                                                        <div className="order-item-info">
+                                                                            <span className="order-item-name">{product.name || '—'}</span>
+                                                                            <span className="order-item-meta">
+                                                                                {item.color && `${item.color}`}
+                                                                                {item.quantity && ` · Qté: ${item.quantity}`}
+                                                                            </span>
+                                                                        </div>
+                                                                        <span className="order-item-price">{price || '—'}</span>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="order-no-items">Aucun article enregistré.</p>
+                                                    )}
+                                                </div>
+
+                                                {/* Total */}
+                                                <div className="order-total-row">
+                                                    <span>Total payé</span>
+                                                    <span className="order-total-amount">
+                                                        {selectedOrder.total_price != null ? `${Number(selectedOrder.total_price).toFixed(2)}€` : '—'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* ── TOAST ── */}
             {message && (
                 <div className={`admin-toast ${message.includes('✅') ? 'success' : 'error'}`}>
                     <div className="toast-content">
-                        {message.includes('✅') ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
+                        {message.includes('✅') ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
                         <div className="toast-message">
                             <h4>{message.includes('✅') ? 'Succès' : 'Erreur'}</h4>
                             <p>{message.replace('✅ ', '').replace('❌ ', '')}</p>
                         </div>
                     </div>
-                    <button className="toast-close" onClick={() => setMessage('')} aria-label="Fermer">
-                        <X size={18} />
-                    </button>
-                    <div className="toast-progress"></div>
+                    <button className="toast-close" onClick={() => setMessage('')}><X size={16} /></button>
+                    <div className="toast-progress" />
                 </div>
             )}
-
-            <div className="admin-dashboard-layout">
-                {/* LIST SECTION */}
-                <div className="admin-list-section">
-                    <h3 className="form-header">Vos Produits ({products.length})</h3>
-                    <div className="products-list">
-                        {products.length === 0 ? (
-                            <p className="text-small">Aucun produit pour le moment.</p>
-                        ) : (
-                            products.map(product => (
-                                <div key={product.id} className={`admin-product-item ${editingId === product.id ? 'editing' : ''}`}>
-                                    <div className="admin-product-info">
-                                        <strong>{product.name}</strong> <span style={{ fontSize: '0.8rem', color: '#666', marginLeft: '0.5rem' }}>({product.slug})</span>
-                                        <span className="text-small">{product.price} {product.isOnSale && <span style={{ color: 'red' }}>(Soldé)</span>}</span>
-                                    </div>
-                                    <div className="admin-product-actions">
-                                        <button className="btn-edit" onClick={() => handleEdit(product)}>Modifier</button>
-                                        <button className="btn-delete" onClick={() => handleDelete(product.id)}>Supprimer</button>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
-
-                {/* FORM SECTION */}
-                <div className="admin-form-section">
-                    <div className="form-header">
-                        <h3>{editingId ? 'Modifier le produit' : 'Ajouter un nouveau produit'}</h3>
-                        {editingId && (
-                            <button type="button" className="btn-cancel-edit" onClick={resetForm}>
-                                Annuler la modification
-                            </button>
-                        )}
-                    </div>
-
-                    <form className="admin-form" onSubmit={handleSubmit}>
-                        <div className="form-group">
-                            <label>Nom du Produit</label>
-                            <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="ex: Ona Haze" />
-                        </div>
-                        <div className="form-group">
-                            <label>Slug (URL) <span style={{ fontSize: '0.8rem', color: '#666', fontWeight: 'normal' }}>généré auto - modifiable</span></label>
-                            <input type="text" name="slug" value={formData.slug} onChange={handleChange} required placeholder="ex: lunettes-solaires" />
-                        </div>
-
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Prix (ex: 80)</label>
-                                <input type="text" name="price" value={formData.price} onChange={handleChange} onBlur={handlePriceBlur} required placeholder="ex: 80" />
-                            </div>
-                            <div className="form-group">
-                                <label>Catégorie</label>
-                                <select name="category" value={formData.category} onChange={handleChange}>
-                                    <option value="Solaires">Solaires</option>
-                                    <option value="Optiques">Optiques</option>
-                                    <option value="Accessoires">Accessoires</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Genre</label>
-                                <select name="gender" value={formData.gender} onChange={handleChange}>
-                                    <option value="Unisexe">Unisexe</option>
-                                    <option value="Homme">Homme</option>
-                                    <option value="Femme">Femme</option>
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Forme</label>
-                                <select name="shape" value={formData.shape} onChange={handleChange}>
-                                    <option value="">(Aucune)</option>
-                                    <option value="Aviateur">Aviateur</option>
-                                    <option value="Carré">Carré</option>
-                                    <option value="Hexagonal">Hexagonal</option>
-                                    <option value="Ovale">Ovale</option>
-                                    <option value="Papillon">Papillon</option>
-                                    <option value="Rectangulaire">Rectangulaire</option>
-                                    <option value="Rond">Rond</option>
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Matériel</label>
-                                <select name="material" value={formData.material} onChange={handleChange}>
-                                    <option value="">(Aucun)</option>
-                                    <option value="Acétate">Acétate</option>
-                                    <option value="Acétate & titane">Acétate & titane</option>
-                                    <option value="Acetate & titanium">Acetate & titanium</option>
-                                    <option value="Acétate & métal">Acétate & métal</option>
-                                    <option value="Acetate and titanium">Acetate and titanium</option>
-                                    <option value="Métal">Métal</option>
-                                    <option value="Titane">Titane</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="variants-section">
-                            <h3 className="section-title text-sans">Variantes de Couleur et Images</h3>
-                            <p className="section-subtitle">Ajoutez des couleurs. Pour chaque couleur, séparez les liens d'images par des virgules.</p>
-
-                            {variants.map((variant, index) => (
-                                <div key={index} className="variant-row">
-                                    <div className="form-group flex-1">
-                                        <label>Couleur</label>
-                                        <input
-                                            type="text"
-                                            value={variant.color}
-                                            onChange={(e) => handleVariantChange(index, 'color', e.target.value)}
-                                            placeholder="ex: Noir"
-                                            required={index === 0}
-                                        />
-                                    </div>
-                                    <div className="form-group flex-3">
-                                        <label>Images (Glisser ou cliquer)</label>
-                                        <input
-                                            type="file"
-                                            multiple
-                                            accept="image/*"
-                                            onChange={(e) => handleVariantFiles(index, e.target.files)}
-                                        />
-                                        {variant.images && (
-                                            <p style={{ fontSize: '0.8rem', marginTop: '0.5rem', color: '#666' }}>
-                                                Sélectionné: {variant.images.length > 50 ? variant.images.substring(0, 50) + '...' : variant.images}
-                                            </p>
-                                        )}
-                                    </div>
-                                    {variants.length > 1 && (
-                                        <button type="button" className="btn-remove-variant" onClick={() => removeVariantRow(index)}>
-                                            X
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                            <button type="button" className="btn-add-variant" onClick={addVariantRow}>
-                                + Ajouter une autre couleur
-                            </button>
-                        </div>
-
-                        <div className="form-group">
-                            <label>Description (globale)</label>
-                            <textarea name="description" value={formData.description} onChange={handleChange} rows="4" required></textarea>
-                        </div>
-
-                        <div className="form-group">
-                            <label>Détail du produit (Accordéon)</label>
-                            <textarea name="details" value={formData.details} onChange={handleChange} rows="4" placeholder="Ce texte apparaîtra dans l'accordéon Détail du produit..."></textarea>
-                        </div>
-
-                        <div className="form-group checkbox-group">
-                            <input type="checkbox" id="isNew" name="isNew" checked={formData.isNew} onChange={handleChange} />
-                            <label htmlFor="isNew">Marquer comme "Nouveau"</label>
-                        </div>
-
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Note (0 à 5, ex: 4.5)</label>
-                                <input type="number" step="0.1" min="0" max="5" name="rating" value={formData.rating} onChange={handleChange} placeholder="ex: 4.5" />
-                            </div>
-                            <div className="form-group">
-                                <label>Nombre d'avis</label>
-                                <input type="number" min="0" step="1" name="reviewCount" value={formData.reviewCount} onChange={handleChange} placeholder="ex: 12" />
-                            </div>
-                        </div>
-
-                        <div className="form-group checkbox-group">
-                            <input type="checkbox" id="isOnSale" name="isOnSale" checked={formData.isOnSale} onChange={handleChange} />
-                            <label htmlFor="isOnSale" style={{ color: '#d9363e', fontWeight: 'bold' }}>Mettre en Solde</label>
-                        </div>
-
-                        {
-                            formData.isOnSale && (
-                                <div className="form-group">
-                                    <label>Prix Soldé (ex: 60)</label>
-                                    <input type="text" name="salePrice" value={formData.salePrice} onChange={handleChange} onBlur={handlePriceBlur} placeholder="Nouveau prix..." required={formData.isOnSale} />
-                                </div>
-                            )
-                        }
-
-                        <button type="submit" className="btn-primary" style={{ width: '100%', padding: '1rem', marginTop: '1rem' }} disabled={loading}>
-                            {loading ? 'Enregistrement en cours...' : (editingId ? 'Mettre à jour le produit' : 'Ajouter le produit')}
-                        </button>
-                    </form >
-
-                    <div className="admin-instructions">
-                        <h3 className="text-sans">ℹ️ Instructions SQL pour Supabase</h3>
-                        <p>N'oublie pas de créer la table <code>products</code> dans Supabase avec ce code SQL :</p>
-                        <div className="sql-snippet">
-                            <code>
-                                create table products (<br />
-                                &nbsp;&nbsp;id bigint generated by default as identity primary key,<br />
-                                &nbsp;&nbsp;name text not null,<br />
-                                &nbsp;&nbsp;slug text,<br />
-                                &nbsp;&nbsp;price text not null,<br />
-                                &nbsp;&nbsp;category text,<br />
-                                &nbsp;&nbsp;gender text default 'Unisexe',<br />
-                                &nbsp;&nbsp;shape text,<br />
-                                &nbsp;&nbsp;material text,<br />
-                                &nbsp;&nbsp;variants jsonb default '[]'::jsonb,<br />
-                                &nbsp;&nbsp;description text,<br />
-                                &nbsp;&nbsp;details text,<br />
-                                &nbsp;&nbsp;"isNew" boolean default false,<br />
-                                &nbsp;&nbsp;"isOnSale" boolean default false,<br />
-                                &nbsp;&nbsp;"salePrice" text,<br />
-                                &nbsp;&nbsp;"rating" numeric,<br />
-                                &nbsp;&nbsp;"reviewCount" integer<br />
-                                );
-                            </code>
-                        </div>
-                    </div>
-                </div >
-            </div >
-        </div >
+        </div>
     );
 };
 
