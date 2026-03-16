@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Camera } from 'lucide-react';
+import { X, Camera, AlertTriangle } from 'lucide-react';
 import './VirtualTryOn.css';
 
 const VirtualTryOn = ({ isOpen, onClose, product }) => {
     const [isCameraReady, setIsCameraReady] = useState(false);
+    const [isConfirmed, setIsConfirmed] = useState(false);
+    const [error, setError] = useState(null);
     const containerRef = useRef(null);
     const arSystemRef = useRef(null);
 
@@ -22,8 +24,12 @@ const VirtualTryOn = ({ isOpen, onClose, product }) => {
                 }
             }
             setIsCameraReady(false);
+            setIsConfirmed(false);
+            setError(null);
             return;
         }
+
+        if (!isConfirmed) return;
 
         let isRunning = true;
 
@@ -79,6 +85,15 @@ const VirtualTryOn = ({ isOpen, onClose, product }) => {
 
             } catch (err) {
                 console.error("Error initializing AR:", err);
+                if (isRunning) {
+                    if (err.name === 'NotAllowedError') {
+                        setError("L'accès à la caméra a été refusé. Veuillez autoriser l'accès dans les paramètres de votre navigateur.");
+                    } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                        setError("Aucune caméra détectée sur cet appareil. L'essayage virtuel nécessite une webcam.");
+                    } else {
+                        setError("Impossible d'initialiser la caméra. Vérifiez que votre appareil dispose d'une webcam et que l'accès est autorisé.");
+                    }
+                }
             }
         };
 
@@ -100,7 +115,7 @@ const VirtualTryOn = ({ isOpen, onClose, product }) => {
                 }
             }
         };
-    }, [isOpen]);
+    }, [isOpen, isConfirmed]);
 
     if (!isOpen) return null;
 
@@ -119,21 +134,49 @@ const VirtualTryOn = ({ isOpen, onClose, product }) => {
                     </button>
                 </div>
 
-                <div className="vto-video-container" ref={containerRef} style={{ position: 'relative', overflow: 'hidden' }}>
-                    {!isCameraReady && (
-                        <div className="vto-loading">
-                            <div className="vto-loader-spinner"></div>
-                            <p>Chargement du modèle 3D et de la caméra...</p>
+                {!isConfirmed ? (
+                    <div className="vto-confirm-screen">
+                        <div className="vto-confirm-content">
+                            <Camera size={48} />
+                            <h3>Activer la caméra</h3>
+                            <p>L'essayage virtuel nécessite l'accès à votre caméra pour afficher les lunettes en temps réel sur votre visage.</p>
+                            <div className="vto-confirm-actions">
+                                <button className="vto-confirm-btn" onClick={() => setIsConfirmed(true)}>
+                                    Activer la caméra
+                                </button>
+                                <button className="vto-cancel-btn" onClick={onClose}>
+                                    Annuler
+                                </button>
+                            </div>
                         </div>
-                    )}
-                    {/* MindAR will inject the <video> and <canvas> here automatically */}
-                </div>
-
-                <div className="vto-controls">
-                    <div className="vto-info-badge">
-                        Modèle de démonstration 3D. Bougez la tête.
                     </div>
-                </div>
+                ) : (
+                    <>
+                        <div className="vto-video-container" ref={containerRef} style={{ position: 'relative', overflow: 'hidden' }}>
+                            {error ? (
+                                <div className="vto-error">
+                                    <AlertTriangle size={40} />
+                                    <p>{error}</p>
+                                    <button className="vto-cancel-btn" onClick={onClose}>
+                                        Fermer
+                                    </button>
+                                </div>
+                            ) : !isCameraReady && (
+                                <div className="vto-loading">
+                                    <div className="vto-loader-spinner"></div>
+                                    <p>Chargement du modèle 3D et de la caméra...</p>
+                                </div>
+                            )}
+                            {/* MindAR will inject the <video> and <canvas> here automatically */}
+                        </div>
+
+                        <div className="vto-controls">
+                            <div className="vto-info-badge">
+                                Modèle de démonstration 3D. Bougez la tête.
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );
