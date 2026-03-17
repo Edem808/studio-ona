@@ -1,9 +1,14 @@
 import React from 'react';
+import SEO from '../components/SEO';
 import './Legals.css';
 
 const CGU = () => {
     return (
         <div className="legals-page container">
+            <SEO
+                title="Conditions Générales d'Utilisation"
+                description="Consultez les Conditions Générales d'Utilisation du site Studio Ona : accès au site, création de compte, propriété intellectuelle et responsabilité."
+            />
             <h1 className="heading-lg text-sans" style={{ paddingTop: '150px', marginBottom: '1rem' }}>
                 Conditions Générales d'Utilisation
             </h1>

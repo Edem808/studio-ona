@@ -46,6 +46,9 @@ const VirtualTryOn = ({ isOpen, onClose, product }) => {
 
                 const mindarThree = new MindARThree({
                     container: containerRef.current,
+                    uiLoading: "no",
+                    uiScanning: "no",
+                    uiError: "no",
                 });
                 arSystemRef.current = mindarThree;
 

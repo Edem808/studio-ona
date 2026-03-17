@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { Trash2, ShoppingBag } from 'lucide-react';
+import SEO from '../components/SEO';
 import ProductShowcase from '../components/Sections/ProductShowcase';
 import './Wishlist.css';
 
@@ -26,6 +27,7 @@ const Wishlist = () => {
 
     return (
         <>
+            <SEO title="Mes Favoris" noindex={true} />
             <div className="wishlist-page container">
                 <div className="wishlist-header-section">
                     <h1 className="heading-lg text-serif">Mes Favoris</h1>

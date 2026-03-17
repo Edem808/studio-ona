@@ -257,3 +257,8 @@
         border-radius: 0;
     }
 }
+
+/* Force hide MindAR injected default UI elements that get appended to body and stuck */
+.mindar-ui-overlay {
+    display: none !important;
+}

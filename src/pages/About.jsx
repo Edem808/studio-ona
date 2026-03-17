@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 import './About.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -73,6 +74,11 @@ const About = () => {
 
     return (
         <div className="about-page">
+            <SEO
+                title="Notre Histoire"
+                description="Découvrez la vision derrière Studio Ona : une passion pour le design minimaliste et la lunetterie contemporaine. Ona signifie 'voir' en Swahili. Artisanat de précision, matériaux nobles, montures architecturales."
+                keywords="histoire Studio Ona, philosophie design lunettes, artisanat lunetterie, ona signifie voir, montures architecturales, design minimaliste"
+            />
             {/* Hero Section */}
             <section className="about-hero container">
                 <div className="about-hero-content" ref={headerRef}>

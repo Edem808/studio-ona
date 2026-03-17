@@ -4,9 +4,10 @@ import { supabase } from '../lib/supabaseClient';
 import {
     CheckCircle2, XCircle, X,
     LayoutDashboard, Package, ShoppingBag, LogOut,
-    TrendingUp, Star, Tag, ChevronRight, Plus,
+    TrendingUp, Star, Tag, ChevronLeft, ChevronRight, Plus,
     Pencil, Trash2, Menu,
-    RefreshCw, Eye, AlertCircle, ArrowLeft, MapPin, CreditCard, User, Package2
+    RefreshCw, Eye, AlertCircle, ArrowLeft, MapPin, CreditCard, User, Package2,
+    Mail, Shield, Clock, Copy, UserX, CheckCheck, Search, Users
 } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import './AdminPage.css';
@@ -42,8 +43,13 @@ const Sparkline = ({ data = [], color = '#000', height = 48 }) => {
 /* ─────────────────────────────────────────────────────────────
    KPI CARD
    ───────────────────────────────────────────────────────────── */
-const KpiCard = ({ icon: Icon, label, value, sub, sparkData, accentColor = '#000' }) => (
-    <div className="kpi-card">
+const KpiCard = ({ icon: Icon, label, value, sub, sparkData, accentColor = '#000', onClick }) => (
+    <div 
+        className={`kpi-card ${onClick ? 'clickable' : ''}`} 
+        onClick={onClick}
+        style={onClick ? { cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' } : {}}
+        role={onClick ? 'button' : undefined}
+    >
         <div className="kpi-top">
             <div className="kpi-icon" style={{ background: `${accentColor}15`, color: accentColor }}>
                 <Icon size={18} />
@@ -93,7 +99,12 @@ const AdminPage = () => {
     /* ── Data ── */
     const [products, setProducts] = useState([]);
     const [orders, setOrders] = useState([]);
+    const [users, setUsers] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [userSearch, setUserSearch] = useState('');
+    const [copiedId, setCopiedId] = useState(null);
+    const [deletingUserId, setDeletingUserId] = useState(null);
 
     /* ── Form state ── */
     const [editingId, setEditingId] = useState(null);
@@ -103,6 +114,7 @@ const AdminPage = () => {
         isNew: false, isOnSale: false, salePrice: '', rating: '', reviewCount: ''
     });
     const [variants, setVariants] = useState([{ color: '', images: '', imageFiles: [] }]);
+    const [draggedItem, setDraggedItem] = useState(null);
 
     /* ── Toasts ── */
     useEffect(() => {
@@ -123,15 +135,69 @@ const AdminPage = () => {
         if (!error && data) setOrders(data);
     }, []);
 
+    const fetchUsers = useCallback(async () => {
+        // Utilise une RPC pour accéder à auth.users (voir SQL dans la doc)
+        const { data, error } = await supabase.rpc('get_admin_users');
+        if (!error && data) {
+            setUsers(data);
+        } else {
+            // Fallback: table profiles si RPC absente
+            const { data: pData, error: pErr } = await supabase
+                .from('profiles')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(100);
+            if (!pErr && pData) setUsers(pData);
+        }
+    }, []);
+
+    const handleDeleteUser = async (userId) => {
+        if (!window.confirm('⚠️ Supprimer cet utilisateur ? Cette action est irréversible et supprimera son compte et ses données.')) return;
+        setDeletingUserId(userId);
+        try {
+            // Supprime via RPC admin (nécessite la fonction SQL)
+            const { error } = await supabase.rpc('admin_delete_user', { target_user_id: userId });
+            if (error) throw error;
+            setMessage('✅ Utilisateur supprimé !');
+            if (selectedUser?.id === userId) setSelectedUser(null);
+            await fetchUsers();
+        } catch (err) {
+            setMessage('❌ Erreur suppression: ' + (err.message || 'Vérifiez les droits admin.'));
+        } finally {
+            setDeletingUserId(null);
+        }
+    };
+
+    const copyToClipboard = async (text, id) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedId(id);
+            setTimeout(() => setCopiedId(null), 2000);
+        } catch {}
+    };
+
+    const getUserInitials = (user) => {
+        const name = user.full_name || user.first_name || user.email || '';
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+    };
+
+    const getUserDisplayName = (user) => {
+        if (user.full_name) return user.full_name;
+        if (user.first_name || user.last_name) return `${user.first_name || ''} ${user.last_name || ''}`.trim();
+        return null;
+    };
+
     useEffect(() => {
         fetchProducts();
         fetchOrders().catch(() => { }); // orders table may not exist yet
-    }, [fetchProducts, fetchOrders]);
+        fetchUsers().catch(() => { }); // profiles table may not exist yet
+    }, [fetchProducts, fetchOrders, fetchUsers]);
 
     const handleRefresh = async () => {
         setRefreshing(true);
         await fetchProducts();
         await fetchOrders().catch(() => { });
+        await fetchUsers().catch(() => { });
         setTimeout(() => setRefreshing(false), 600);
     };
 
@@ -179,22 +245,86 @@ const AdminPage = () => {
 
     const handleVariantFiles = (i, files) => {
         const nv = [...variants];
-        nv[i].imageFiles = Array.from(files);
-        nv[i].images = Array.from(files).map(f => f.name).join(', ');
+        const newFiles = Array.from(files).map((f, idx) => ({
+            id: `file-${Date.now()}-${idx}`,
+            type: 'file',
+            file: f,
+            url: URL.createObjectURL(f)
+        }));
+        nv[i].imageList = [...(nv[i].imageList || []), ...newFiles];
         setVariants(nv);
     };
 
-    const addVariantRow = () => setVariants([...variants, { color: '', images: '', imageFiles: [] }]);
+    const removeImage = (variantIndex, imageId) => {
+        const nv = [...variants];
+        const img = nv[variantIndex].imageList.find(img => img.id === imageId);
+        if (img && img.type === 'file') {
+            URL.revokeObjectURL(img.url);
+        }
+        nv[variantIndex].imageList = nv[variantIndex].imageList.filter(img => img.id !== imageId);
+        setVariants(nv);
+    };
+
+    const handleDragStart = (variantIndex, imageIndex) => {
+        setDraggedItem({ variantIndex, imageIndex });
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDrop = (e, targetVariantIndex, targetImageIndex) => {
+        e.preventDefault();
+        if (!draggedItem) return;
+        
+        const { variantIndex: sourceVariantIndex, imageIndex: sourceImageIndex } = draggedItem;
+        
+        if (sourceVariantIndex !== targetVariantIndex) return;
+        if (sourceImageIndex === targetImageIndex) return;
+        
+        const nv = [...variants];
+        const list = [...(nv[sourceVariantIndex].imageList || [])];
+        
+        const [removed] = list.splice(sourceImageIndex, 1);
+        list.splice(targetImageIndex, 0, removed);
+        
+        nv[sourceVariantIndex].imageList = list;
+        setVariants(nv);
+        setDraggedItem(null);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedItem(null);
+    };
+
+    const addVariantRow = () => setVariants([...variants, { color: '', imageList: [] }]);
     const removeVariantRow = (i) => setVariants(variants.filter((_, idx) => idx !== i));
 
     const resetForm = (clearMsg = true) => {
+        // Nettoyer les URL des prévisualisations pour éviter les fuites mémoire
+        variants.forEach(v => {
+            if (v.imageList) {
+                v.imageList.forEach(img => {
+                    if (img.type === 'file') URL.revokeObjectURL(img.url);
+                });
+            }
+        });
         setEditingId(null);
         setFormData({ name: '', slug: '', price: '', category: 'Solaires', gender: 'Unisexe', shape: '', material: '', description: '', details: '', isNew: false, isOnSale: false, salePrice: '', rating: '', reviewCount: '' });
-        setVariants([{ color: '', images: '', imageFiles: [] }]);
+        setVariants([{ color: '', imageList: [] }]);
         if (clearMsg) setMessage('');
     };
 
     const handleEdit = (product) => {
+        // Nettoyer les anciennes prévisualisations
+        variants.forEach(v => {
+            if (v.imageList) {
+                v.imageList.forEach(img => {
+                    if (img.type === 'file') URL.revokeObjectURL(img.url);
+                });
+            }
+        });
         setEditingId(product.id);
         setFormData({
             name: product.name, slug: product.slug || '', price: product.price,
@@ -205,9 +335,16 @@ const AdminPage = () => {
             salePrice: product.salePrice || '', rating: product.rating || '', reviewCount: product.reviewCount || ''
         });
         if (product.variants?.length > 0) {
-            setVariants(product.variants.map(v => ({ color: v.color, images: v.images.join(', '), imageFiles: [] })));
+            setVariants(product.variants.map(v => ({ 
+                color: v.color, 
+                imageList: (v.images || []).map((url, idx) => ({
+                    id: `url-${Date.now()}-${idx}`,
+                    type: 'url',
+                    url: url
+                }))
+            })));
         } else {
-            setVariants([{ color: '', images: '', imageFiles: [] }]);
+            setVariants([{ color: '', imageList: [] }]);
         }
         setActiveView('products');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -231,18 +368,18 @@ const AdminPage = () => {
                 const colorTrimmed = v.color.trim();
                 if (!colorTrimmed) continue;
                 let imageUrls = [];
-                if (v.imageFiles?.length > 0) {
-                    for (const file of v.imageFiles) {
+                for (const img of (v.imageList || [])) {
+                    if (img.type === 'file') {
                         const opts = { maxSizeMB: 1, maxWidthOrHeight: 1600, useWebWorker: true, fileType: 'image/webp' };
-                        const blob = await imageCompression(file, opts);
+                        const blob = await imageCompression(img.file, opts);
                         const filePath = `${Math.random()}-${Date.now()}.webp`;
                         const { error: upErr } = await supabase.storage.from('product-images').upload(filePath, blob, { contentType: 'image/webp' });
                         if (upErr) throw new Error("Upload images échoué");
                         const { data: pub } = supabase.storage.from('product-images').getPublicUrl(filePath);
                         imageUrls.push(pub.publicUrl);
+                    } else if (img.type === 'url') {
+                        imageUrls.push(img.url);
                     }
-                } else if (v.images) {
-                    imageUrls = v.images.split(',').map(img => img.trim()).filter(Boolean);
                 }
                 processedVariants.push({ color: colorTrimmed, images: imageUrls });
             }
@@ -292,6 +429,7 @@ const AdminPage = () => {
         { id: 'overview', label: 'Vue d\'ensemble', icon: LayoutDashboard },
         { id: 'products', label: 'Produits', icon: Package },
         { id: 'orders', label: 'Commandes', icon: ShoppingBag },
+        { id: 'users', label: 'Utilisateurs', icon: User },
     ];
 
     return (
@@ -360,12 +498,14 @@ const AdminPage = () => {
                             {/* KPI Grid */}
                             <div className="kpi-grid">
                                 <KpiCard
+
                                     icon={Package}
                                     label="Produits"
                                     value={products.length}
                                     sub={`${totalVariants} variante${totalVariants > 1 ? 's' : ''} au total`}
                                     sparkData={sparkData}
                                     accentColor="#000"
+                                    onClick={() => setActiveView('products')}
                                 />
                                 <KpiCard
                                     icon={Star}
@@ -373,6 +513,7 @@ const AdminPage = () => {
                                     value={kpiNew}
                                     sub="Marqués « Nouveau »"
                                     accentColor="#6366f1"
+                                    onClick={() => setActiveView('products')}
                                 />
                                 <KpiCard
                                     icon={Tag}
@@ -380,6 +521,7 @@ const AdminPage = () => {
                                     value={kpiSale}
                                     sub="Produits soldés actifs"
                                     accentColor="#d9363e"
+                                    onClick={() => setActiveView('products')}
                                 />
                                 <KpiCard
                                     icon={TrendingUp}
@@ -387,6 +529,7 @@ const AdminPage = () => {
                                     value={orders.length || '—'}
                                     sub={orders.length ? 'Dernières 50 commandes' : 'Table orders introuvable'}
                                     accentColor="#10b981"
+                                    onClick={() => setActiveView('orders')}
                                 />
                             </div>
 
@@ -395,7 +538,7 @@ const AdminPage = () => {
                                 <div className="section-header-row">
                                     <h2 className="section-heading">Derniers produits ajoutés</h2>
                                     <button className="section-link-btn" onClick={() => setActiveView('products')}>
-                                        Voir tous <ChevronRight size={14} />
+                                        Voir tout <ChevronRight size={14} />
                                     </button>
                                 </div>
                                 <div className="recent-products-list">
@@ -604,11 +747,40 @@ const AdminPage = () => {
                                                     <div className="form-group flex-3">
                                                         <label>Images</label>
                                                         <input type="file" multiple accept="image/*" onChange={(e) => handleVariantFiles(index, e.target.files)} />
-                                                        {variant.images && (
-                                                            <p className="file-hint">
-                                                                {variant.images.length > 60 ? variant.images.substring(0, 60) + '…' : variant.images}
-                                                            </p>
-                                                        )}
+                                                        
+                                                        {/* Section de prévisualisation des images */}
+                                                        <div className="variant-image-previews" style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+                                                            {variant.imageList && variant.imageList.length > 0 ? (
+                                                                variant.imageList.map((img, i) => (
+                                                                    <div 
+                                                                        key={img.id} 
+                                                                        className="image-preview-item" 
+                                                                        draggable
+                                                                        onDragStart={() => handleDragStart(index, i)}
+                                                                        onDragOver={handleDragOver}
+                                                                        onDrop={(e) => handleDrop(e, index, i)}
+                                                                        onDragEnd={handleDragEnd}
+                                                                        style={{ 
+                                                                            position: 'relative', 
+                                                                            width: '64px', 
+                                                                            height: '64px', 
+                                                                            cursor: 'grab',
+                                                                            opacity: draggedItem?.variantIndex === index && draggedItem?.imageIndex === i ? 0.5 : 1
+                                                                        }}
+                                                                    >
+                                                                        <img src={img.type === 'url' ? img.url.replace(/^https?:\/\/localhost(:\d+)?/i, '') : img.url} alt={`Aperçu ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#f8fafc', pointerEvents: 'none' }} />
+                                                                        
+                                                                        <div className="image-actions" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', borderRadius: '6px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', opacity: 0, transition: 'opacity 0.2s' }}>
+                                                                            <button type="button" onClick={() => removeImage(index, img.id)} style={{ background: 'none', border: 'none', color: '#ff4d4f', cursor: 'pointer', padding: '2px', display: 'flex' }} title="Supprimer">
+                                                                                <Trash2 size={16} />
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                ))
+                                                            ) : (
+                                                                <span style={{ fontSize: '0.875rem', color: '#94a3b8' }}>Aucune image.</span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                     {variants.length > 1 && (
                                                         <button type="button" className="btn-remove-variant" onClick={() => removeVariantRow(index)} title="Supprimer cette variante">
@@ -861,6 +1033,199 @@ const AdminPage = () => {
                             )}
                         </div>
                     )}
+
+                    {/* ══ USERS ══ */}
+                    {activeView === 'users' && (() => {
+                        const filteredUsers = users.filter(u => {
+                            const q = userSearch.toLowerCase();
+                            return !q || (u.email || '').toLowerCase().includes(q)
+                                || (getUserDisplayName(u) || '').toLowerCase().includes(q);
+                        });
+                        return (
+                        <div className="view-users">
+                            <div className="view-header">
+                                <h1 className="view-title">
+                                    <Users size={28} />
+                                    Utilisateurs
+                                    {users.length > 0 && <span className="view-count">{users.length}</span>}
+                                </h1>
+                                <p className="view-subtitle">Gérez les comptes clients inscrits — données issues de <code>auth.users</code></p>
+                            </div>
+
+                            <div className="users-layout">
+                                {/* ── Colonne liste ── */}
+                                <div className="users-list-panel">
+                                    {/* Recherche */}
+                                    <div className="users-search-bar">
+                                        <Search size={15} className="users-search-icon" />
+                                        <input
+                                            type="text"
+                                            placeholder="Rechercher par email ou nom…"
+                                            value={userSearch}
+                                            onChange={e => setUserSearch(e.target.value)}
+                                            className="users-search-input"
+                                        />
+                                        {userSearch && (
+                                            <button className="users-search-clear" onClick={() => setUserSearch('')}>
+                                                <X size={13} />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {users.length === 0 ? (
+                                        <div className="empty-state large">
+                                            <User size={40} />
+                                            <p>Aucun utilisateur trouvé.</p>
+                                            <small>Créez la fonction SQL <code>get_admin_users()</code> dans Supabase.</small>
+                                        </div>
+                                    ) : filteredUsers.length === 0 ? (
+                                        <div className="empty-state">
+                                            <Search size={28} />
+                                            <p>Aucun résultat pour « {userSearch} »</p>
+                                        </div>
+                                    ) : (
+                                        <div className="users-list-scroll">
+                                            {filteredUsers.map(u => {
+                                                const initials = getUserInitials(u);
+                                                const displayName = getUserDisplayName(u);
+                                                const isActive = selectedUser?.id === u.id;
+                                                return (
+                                                    <div
+                                                        key={u.id}
+                                                        className={`user-list-item ${isActive ? 'active' : ''}`}
+                                                        onClick={() => setSelectedUser(u)}
+                                                    >
+                                                        <div className="uli-avatar">{initials}</div>
+                                                        <div className="uli-info">
+                                                            <span className="uli-email">{u.email || '—'}</span>
+                                                            {displayName && <span className="uli-name">{displayName}</span>}
+                                                        </div>
+                                                        <div className="uli-right">
+                                                            {u.email_confirmed_at
+                                                                ? <span className="user-badge verified"><CheckCheck size={10} /> Vérifié</span>
+                                                                : <span className="user-badge pending"><Clock size={10} /> En attente</span>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* ── Colonne détail ── */}
+                                <div className={`user-detail-panel ${selectedUser ? 'visible' : ''}`}>
+                                    {!selectedUser ? (
+                                        <div className="user-detail-placeholder">
+                                            <Users size={36} />
+                                            <p>Sélectionnez un utilisateur<br />pour voir ses détails</p>
+                                        </div>
+                                    ) : (() => {
+                                        const u = selectedUser;
+                                        const displayName = getUserDisplayName(u);
+                                        const initials = getUserInitials(u);
+                                        return (
+                                            <div className="user-detail-content">
+                                                {/* Header */}
+                                                <div className="user-detail-header">
+                                                    <button className="order-back-btn" onClick={() => setSelectedUser(null)}>
+                                                        <ArrowLeft size={16} />
+                                                    </button>
+                                                    <div className="user-detail-avatar-big">{initials}</div>
+                                                    <div className="user-detail-identity">
+                                                        <span className="user-detail-name">{displayName || u.email}</span>
+                                                        {displayName && <span className="user-detail-email-sub">{u.email}</span>}
+                                                        {u.email_confirmed_at
+                                                            ? <span className="user-badge verified"><CheckCheck size={10} /> Email vérifié</span>
+                                                            : <span className="user-badge pending"><Clock size={10} /> Email non vérifié</span>
+                                                        }
+                                                    </div>
+                                                </div>
+
+                                                {/* Infos */}
+                                                <div className="user-info-grid">
+                                                    <div className="user-info-block">
+                                                        <div className="uib-label"><Mail size={13} /> Email</div>
+                                                        <div className="uib-value">
+                                                            {u.email}
+                                                            <button
+                                                                className="copy-btn"
+                                                                onClick={() => copyToClipboard(u.email, 'email-' + u.id)}
+                                                                title="Copier l'email"
+                                                            >
+                                                                {copiedId === 'email-' + u.id ? <CheckCheck size={12} /> : <Copy size={12} />}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="user-info-block">
+                                                        <div className="uib-label"><Shield size={13} /> ID utilisateur</div>
+                                                        <div className="uib-value mono">
+                                                            {u.id}
+                                                            <button
+                                                                className="copy-btn"
+                                                                onClick={() => copyToClipboard(u.id, 'id-' + u.id)}
+                                                                title="Copier l'ID"
+                                                            >
+                                                                {copiedId === 'id-' + u.id ? <CheckCheck size={12} /> : <Copy size={12} />}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="user-info-block">
+                                                        <div className="uib-label"><Clock size={13} /> Inscription</div>
+                                                        <div className="uib-value">
+                                                            {u.created_at
+                                                                ? new Date(u.created_at).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+                                                                : '—'}
+                                                        </div>
+                                                    </div>
+
+                                                    {u.last_sign_in_at && (
+                                                        <div className="user-info-block">
+                                                            <div className="uib-label"><Eye size={13} /> Dernière connexion</div>
+                                                            <div className="uib-value">
+                                                                {new Date(u.last_sign_in_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {(u.phone || u.raw_user_meta_data?.phone) && (
+                                                        <div className="user-info-block">
+                                                            <div className="uib-label">Téléphone</div>
+                                                            <div className="uib-value">{u.phone || u.raw_user_meta_data?.phone}</div>
+                                                        </div>
+                                                    )}
+
+                                                    {u.provider && (
+                                                        <div className="user-info-block">
+                                                            <div className="uib-label">Méthode de connexion</div>
+                                                            <div className="uib-value">
+                                                                <span className="user-provider-badge">{u.provider}</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Actions */}
+                                                <div className="user-actions-footer">
+                                                    <button
+                                                        className="btn-user-action danger"
+                                                        onClick={() => handleDeleteUser(u.id)}
+                                                        disabled={deletingUserId === u.id}
+                                                    >
+                                                        <UserX size={15} />
+                                                        {deletingUserId === u.id ? 'Suppression…' : 'Supprimer ce compte'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                            </div>
+                        </div>
+                        );
+                    })()}
                 </div>
             </div>
 

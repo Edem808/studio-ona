@@ -1,10 +1,16 @@
 import React from 'react';
 import { Icon } from '@iconify/react';
+import SEO from '../components/SEO';
 import './Magasin.css';
 
 const Magasin = () => {
     return (
         <div className="magasin-page">
+            <SEO
+                title="Notre Boutique Paris"
+                description="Visitez le concept store Studio Ona à Paris 3ème — 12 Rue des Lunetiers. Examen de la vue, stylisme personnalisé, atelier sur place. Un espace dédié à la santé visuelle et au style."
+                keywords="boutique Studio Ona Paris, opticien Paris 3ème, concept store lunettes, examen vue Paris, stylisme lunettes personnalisé, atelier optique"
+            />
             {/* Hero Section */}
             <section className="magasin-hero">
                 <div className="magasin-hero-content container">

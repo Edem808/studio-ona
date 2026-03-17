@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
+import SEO from '../components/SEO';
 import './FAQ.css';
 
 const FAQ = () => {
@@ -61,6 +62,11 @@ const FAQ = () => {
 
     return (
         <div className="faq-page container">
+            <SEO
+                title="FAQ — Questions Fréquentes"
+                description="Trouvez les réponses à vos questions sur les commandes, livraisons, retours, montures et verres correcteurs chez Studio Ona. Livraison gratuite, retours sous 14 jours."
+                keywords="FAQ Studio Ona, livraison lunettes, retour lunettes, verres correcteurs, taille lunettes, suivi commande"
+            />
             <h1 className="heading-lg text-sans faq-heading" style={{ paddingTop: '150px' }}>
                 Foire aux Questions
             </h1>

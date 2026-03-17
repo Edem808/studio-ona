@@ -2,7 +2,7 @@
     display: flex;
     width: 100%;
     /* On ajoute le même padding que .product-showcase (8rem haut/bas, 5% gauche/droite) */
-    padding: 2rem 5% 8rem 5%;
+    padding: 2rem 5% 4rem 5%;
     /* Suppression du gap pour coller les deux images */
     /* La hauteur peut être ajustée selon tes besoins (ex: 80vh ou 600px) */
     height: 70vh;

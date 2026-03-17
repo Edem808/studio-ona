@@ -4,6 +4,7 @@ import { Heart, ChevronRight, ChevronLeft, Plus, Check } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
+import SEO from '../components/SEO';
 import ProductCard from '../components/UI/ProductCard';
 import ProductReviews from '../components/UI/ProductReviews';
 import VirtualTryOn from '../components/UI/VirtualTryOn';
@@ -139,6 +140,15 @@ const ProductDetail = () => {
 
     return (
         <div className="product-detail-wrapper">
+            {product && (
+                <SEO
+                    title={product.name}
+                    description={product.description ? product.description.substring(0, 160) : `Découvrez ${product.name} de Studio Ona. Monture de créateur au design minimaliste. Essayage virtuel disponible. Livraison et retours gratuits.`}
+                    keywords={`${product.name}, ${product.category || 'lunettes'} créateur, monture design, acheter ${product.name}`}
+                    canonical={`https://studio-ona.fr/shop/${product.slug || product.id}`}
+                    ogType="product"
+                />
+            )}
             <div className="product-detail-page">
                 <div className="product-image-section">
                     {hasMultipleImages && (

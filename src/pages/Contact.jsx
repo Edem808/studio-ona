@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
+import SEO from '../components/SEO';
 import './Contact.css';
 
 const Contact = () => {
@@ -31,6 +32,11 @@ const Contact = () => {
 
     return (
         <div className="contact-page container">
+            <SEO
+                title="Contact"
+                description="Contactez l'équipe Studio Ona pour toute question sur nos montures, vos verres ou votre commande. E-mail : hello@studio-ona.fr — Téléphone : +33 (0)1 23 45 67 89. Réponse sous 24h à 48h."
+                keywords="contacter Studio Ona, service client lunettes, contact opticien Paris, suivi commande lunettes"
+            />
             <h1 className="heading-lg text-sans contact-heading" style={{ paddingTop: '150px' }}>
                 Contactez-nous
             </h1>

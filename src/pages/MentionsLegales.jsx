@@ -1,10 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 import './Legals.css';
 
 const MentionsLegales = () => {
     return (
         <div className="legals-page container">
+            <SEO
+                title="Mentions Légales"
+                description="Mentions légales du site Studio Ona : éditeur du site, directeur de la publication, hébergement, propriété intellectuelle et droit applicable."
+            />
             <h1 className="heading-lg text-sans" style={{ paddingTop: '150px', marginBottom: '1rem' }}>
                 Mentions Légales
             </h1>

@@ -1,9 +1,14 @@
 import React from 'react';
+import SEO from '../components/SEO';
 import './Legals.css'; // We'll use a shared CSS file for legal pages
 
 const CGV = () => {
     return (
         <div className="legals-page container">
+            <SEO
+                title="Conditions Générales de Vente"
+                description="Consultez les Conditions Générales de Vente de Studio Ona : commandes, livraison, paiement, droit de rétractation, garanties et politique de retour pour vos achats de lunettes."
+            />
             <h1 className="heading-lg text-sans" style={{ paddingTop: '150px', marginBottom: '1rem' }}>
                 Conditions Générales de Vente
             </h1>

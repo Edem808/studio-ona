@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, ShieldCheck, Mail, MapPin, CreditCard, CheckCircle2, Gift } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../lib/supabaseClient';
+import SEO from '../components/SEO';
 import './Checkout.css';
 
 // Stripe Elements
@@ -291,6 +292,7 @@ const Checkout = () => {
 
     return (
         <div className="checkout-page container">
+            <SEO title="Paiement Sécurisé" noindex={true} />
             <div className="checkout-grid">
 
                 {/* Left Side - Form wrapped in Stripe Elements */}

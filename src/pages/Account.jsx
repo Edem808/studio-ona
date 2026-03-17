@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import SEO from '../components/SEO';
 import './Account.css';
 
 const Account = () => {
@@ -176,6 +177,7 @@ const Account = () => {
     if (user) {
         return (
             <div className="account-page container text-sans">
+                <SEO title="Mon Compte" noindex={true} />
                 <h1 className="heading-lg text-serif" style={{ paddingTop: '150px', marginBottom: '2rem' }}>Mon Compte</h1>
 
                 <div className="account-dashboard">
@@ -294,6 +296,7 @@ const Account = () => {
     // ----- Render Forms (Unauthenticated) -----
     return (
         <div className="account-page container text-sans">
+            <SEO title="Connexion" noindex={true} />
             <div className="auth-wrapper">
                 <h1 className="heading-lg text-serif" style={{ paddingTop: '150px', marginBottom: '2rem', textAlign: 'center' }}>
                     {view === 'login' && 'Connexion'}

@@ -1,9 +1,14 @@
 import React from 'react';
+import SEO from '../components/SEO';
 import './Legals.css';
 
 const Confidentialite = () => {
     return (
         <div className="legals-page container">
+            <SEO
+                title="Politique de Confidentialité"
+                description="Studio Ona s'engage à protéger vos données personnelles conformément au RGPD. Découvrez notre politique de confidentialité : données collectées, finalités, durées de conservation et vos droits."
+            />
             <h1 className="heading-lg text-sans" style={{ paddingTop: '150px', marginBottom: '1rem' }}>
                 Politique de Confidentialité
             </h1>

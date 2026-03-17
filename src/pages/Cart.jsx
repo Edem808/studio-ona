@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { Icon } from '@iconify/react';
+import SEO from '../components/SEO';
 import ProductShowcase from '../components/Sections/ProductShowcase';
 import './Cart.css';
 
@@ -12,6 +13,7 @@ const Cart = () => {
 
     return (
         <>
+            <SEO title="Mon Panier" noindex={true} />
             <div className="cart-page container">
                 <h1 className="heading-lg text-sans" style={{ paddingTop: '150px', marginBottom: '2rem' }}>Mon panier</h1>
 
