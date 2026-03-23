@@ -36,7 +36,7 @@ export const CartProvider = ({ children }) => {
         localStorage.setItem('ona_cart', JSON.stringify(cart));
     }, [cart]);
 
-    const addToCart = (product, variantColor = null, quantity = 1) => {
+    const addToCart = (product, variantColor = null, quantity = 1, prescriptionData = null) => {
         setCart(prev => {
             // Check if item already exists (same product ID and same variant)
             const existingItemIndex = prev.findIndex(item =>
@@ -47,13 +47,18 @@ export const CartProvider = ({ children }) => {
                 // Update quantity if explicitly requested
                 const newCart = [...prev];
                 newCart[existingItemIndex].quantity += quantity;
+                // Update prescription if provided
+                if (prescriptionData) {
+                    newCart[existingItemIndex].prescriptionData = prescriptionData;
+                }
                 return newCart;
             } else {
                 // Add new item
-                return [...prev, { product, color: variantColor, quantity }];
+                return [...prev, { product, color: variantColor, quantity, prescriptionData }];
             }
         });
     };
+
 
     const removeFromCart = (productId, variantColor = null) => {
         setCart(prev => prev.filter(item =>

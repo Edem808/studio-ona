@@ -7,7 +7,7 @@ import {
     TrendingUp, Star, Tag, ChevronLeft, ChevronRight, Plus,
     Pencil, Trash2, Menu,
     RefreshCw, Eye, AlertCircle, ArrowLeft, MapPin, CreditCard, User, Package2,
-    Mail, Shield, Clock, Copy, UserX, CheckCheck, Search, Users
+    Mail, Shield, Clock, Copy, UserX, CheckCheck, Search, Users, Settings
 } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import './AdminPage.css';
@@ -44,8 +44,8 @@ const Sparkline = ({ data = [], color = '#000', height = 48 }) => {
    KPI CARD
    ───────────────────────────────────────────────────────────── */
 const KpiCard = ({ icon: Icon, label, value, sub, sparkData, accentColor = '#000', onClick }) => (
-    <div 
-        className={`kpi-card ${onClick ? 'clickable' : ''}`} 
+    <div
+        className={`kpi-card ${onClick ? 'clickable' : ''}`}
         onClick={onClick}
         style={onClick ? { cursor: 'pointer', transition: 'transform 0.2s ease, box-shadow 0.2s ease' } : {}}
         role={onClick ? 'button' : undefined}
@@ -116,6 +116,16 @@ const AdminPage = () => {
     const [variants, setVariants] = useState([{ color: '', images: '', imageFiles: [] }]);
     const [draggedItem, setDraggedItem] = useState(null);
 
+    /* ── Hero Settings state ── */
+    const [heroSettings, setHeroSettings] = useState({
+        mediaType: 'image',
+        mediaUrl: '',
+        title: 'Collection Printemps Été 26',
+        buttonText: 'Voir la collection',
+        buttonLink: '/shop',
+        uploading: false
+    });
+
     /* ── Toasts ── */
     useEffect(() => {
         if (message) {
@@ -151,6 +161,13 @@ const AdminPage = () => {
         }
     }, []);
 
+    const fetchHeroSettings = useCallback(async () => {
+        const { data, error } = await supabase.from('site_settings').select('value').eq('key', 'hero_config').single();
+        if (!error && data?.value) {
+            setHeroSettings(prev => ({ ...prev, ...data.value, uploading: false }));
+        }
+    }, []);
+
     const handleDeleteUser = async (userId) => {
         if (!window.confirm('⚠️ Supprimer cet utilisateur ? Cette action est irréversible et supprimera son compte et ses données.')) return;
         setDeletingUserId(userId);
@@ -173,7 +190,7 @@ const AdminPage = () => {
             await navigator.clipboard.writeText(text);
             setCopiedId(id);
             setTimeout(() => setCopiedId(null), 2000);
-        } catch {}
+        } catch { }
     };
 
     const getUserInitials = (user) => {
@@ -191,13 +208,15 @@ const AdminPage = () => {
         fetchProducts();
         fetchOrders().catch(() => { }); // orders table may not exist yet
         fetchUsers().catch(() => { }); // profiles table may not exist yet
-    }, [fetchProducts, fetchOrders, fetchUsers]);
+        fetchHeroSettings().catch(() => { });
+    }, [fetchProducts, fetchOrders, fetchUsers, fetchHeroSettings]);
 
     const handleRefresh = async () => {
         setRefreshing(true);
         await fetchProducts();
         await fetchOrders().catch(() => { });
         await fetchUsers().catch(() => { });
+        await fetchHeroSettings().catch(() => { });
         setTimeout(() => setRefreshing(false), 600);
     };
 
@@ -277,18 +296,18 @@ const AdminPage = () => {
     const handleDrop = (e, targetVariantIndex, targetImageIndex) => {
         e.preventDefault();
         if (!draggedItem) return;
-        
+
         const { variantIndex: sourceVariantIndex, imageIndex: sourceImageIndex } = draggedItem;
-        
+
         if (sourceVariantIndex !== targetVariantIndex) return;
         if (sourceImageIndex === targetImageIndex) return;
-        
+
         const nv = [...variants];
         const list = [...(nv[sourceVariantIndex].imageList || [])];
-        
+
         const [removed] = list.splice(sourceImageIndex, 1);
         list.splice(targetImageIndex, 0, removed);
-        
+
         nv[sourceVariantIndex].imageList = list;
         setVariants(nv);
         setDraggedItem(null);
@@ -335,8 +354,8 @@ const AdminPage = () => {
             salePrice: product.salePrice || '', rating: product.rating || '', reviewCount: product.reviewCount || ''
         });
         if (product.variants?.length > 0) {
-            setVariants(product.variants.map(v => ({ 
-                color: v.color, 
+            setVariants(product.variants.map(v => ({
+                color: v.color,
                 imageList: (v.images || []).map((url, idx) => ({
                     id: `url-${Date.now()}-${idx}`,
                     type: 'url',
@@ -401,16 +420,64 @@ const AdminPage = () => {
             if (editingId) {
                 const { error } = await supabase.from('products').update(payload).eq('id', editingId);
                 if (error) throw error;
-                setMessage('✅ Produit mis à jour !');
+                setMessage('Produit mis à jour !');
             } else {
                 const { error } = await supabase.from('products').insert([payload]);
                 if (error) throw error;
-                setMessage('✅ Produit ajouté !');
+                setMessage('Produit ajouté !');
             }
             resetForm(false);
             fetchProducts();
         } catch (err) {
             setMessage(`❌ Erreur: ${err.message || 'Impossible d\'enregistrer'}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleHeroMediaUpload = async (file) => {
+        if (!file) return;
+        setHeroSettings(prev => ({ ...prev, uploading: true }));
+        try {
+            const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
+            const { error: uploadError } = await supabase.storage
+                .from('site_media')
+                .upload(fileName, file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage.from('site_media').getPublicUrl(fileName);
+            if (data?.publicUrl) {
+                setHeroSettings(prev => ({ ...prev, mediaUrl: data.publicUrl, uploading: false }));
+                setMessage('✅ Média téléversé avec succès !');
+            }
+        } catch (err) {
+            setHeroSettings(prev => ({ ...prev, uploading: false }));
+            setMessage(`❌ Erreur téléversement: ${err.message}`);
+        }
+    };
+
+    const handleSaveHeroSettings = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const payload = {
+                mediaType: heroSettings.mediaType,
+                mediaUrl: heroSettings.mediaUrl,
+                title: heroSettings.title,
+                buttonText: heroSettings.buttonText,
+                buttonLink: heroSettings.buttonLink
+            };
+
+            const { error } = await supabase.from('site_settings').upsert(
+                { key: 'hero_config', value: payload },
+                { onConflict: 'key' }
+            );
+
+            if (error) throw error;
+            setMessage('✅ Configuration sauvegardée !');
+        } catch (error) {
+            setMessage(`❌ Erreur sauvegarde: ${error.message}`);
         } finally {
             setLoading(false);
         }
@@ -430,6 +497,7 @@ const AdminPage = () => {
         { id: 'products', label: 'Produits', icon: Package },
         { id: 'orders', label: 'Commandes', icon: ShoppingBag },
         { id: 'users', label: 'Utilisateurs', icon: User },
+        { id: 'settings', label: 'Configuration', icon: Settings },
     ];
 
     return (
@@ -747,29 +815,29 @@ const AdminPage = () => {
                                                     <div className="form-group flex-3">
                                                         <label>Images</label>
                                                         <input type="file" multiple accept="image/*" onChange={(e) => handleVariantFiles(index, e.target.files)} />
-                                                        
+
                                                         {/* Section de prévisualisation des images */}
                                                         <div className="variant-image-previews" style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
                                                             {variant.imageList && variant.imageList.length > 0 ? (
                                                                 variant.imageList.map((img, i) => (
-                                                                    <div 
-                                                                        key={img.id} 
-                                                                        className="image-preview-item" 
+                                                                    <div
+                                                                        key={img.id}
+                                                                        className="image-preview-item"
                                                                         draggable
                                                                         onDragStart={() => handleDragStart(index, i)}
                                                                         onDragOver={handleDragOver}
                                                                         onDrop={(e) => handleDrop(e, index, i)}
                                                                         onDragEnd={handleDragEnd}
-                                                                        style={{ 
-                                                                            position: 'relative', 
-                                                                            width: '64px', 
-                                                                            height: '64px', 
+                                                                        style={{
+                                                                            position: 'relative',
+                                                                            width: '64px',
+                                                                            height: '64px',
                                                                             cursor: 'grab',
                                                                             opacity: draggedItem?.variantIndex === index && draggedItem?.imageIndex === i ? 0.5 : 1
                                                                         }}
                                                                     >
                                                                         <img src={img.type === 'url' ? img.url.replace(/^https?:\/\/localhost(:\d+)?/i, '') : img.url} alt={`Aperçu ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#f8fafc', pointerEvents: 'none' }} />
-                                                                        
+
                                                                         <div className="image-actions" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', borderRadius: '6px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', opacity: 0, transition: 'opacity 0.2s' }}>
                                                                             <button type="button" onClick={() => removeImage(index, img.id)} style={{ background: 'none', border: 'none', color: '#ff4d4f', cursor: 'pointer', padding: '2px', display: 'flex' }} title="Supprimer">
                                                                                 <Trash2 size={16} />
@@ -1008,6 +1076,59 @@ const AdminPage = () => {
                                                                                 {item.color && `${item.color}`}
                                                                                 {item.quantity && ` · Qté: ${item.quantity}`}
                                                                             </span>
+                                                                            {/* Prescription / Correction */}
+                                                                            {item.prescriptionData && (
+                                                                                <div className="order-item-prescription" style={{ marginTop: '0.5rem', padding: '0.6rem 0.75rem', background: '#f5f5f4', fontSize: '0.78rem', lineHeight: '1.6', color: '#444', borderLeft: '2px solid #111' }}>
+                                                                                    <strong style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#111' }}>
+                                                                                        🏥 Correction optique
+                                                                                    </strong>
+                                                                                    {item.prescriptionData.type === 'form' ? (
+                                                                                        <div style={{ marginTop: '0.35rem' }}>
+                                                                                            {item.prescriptionData.od?.sphere && (
+                                                                                                <div>OD : Sph {item.prescriptionData.od.sphere}
+                                                                                                    {item.prescriptionData.od.cylinder && ` / Cyl ${item.prescriptionData.od.cylinder}`}
+                                                                                                    {item.prescriptionData.od.axis && ` / Axe ${item.prescriptionData.od.axis}°`}
+                                                                                                    {item.prescriptionData.od.addition && ` / Add +${item.prescriptionData.od.addition}`}
+                                                                                                </div>
+                                                                                            )}
+                                                                                            {item.prescriptionData.og?.sphere && (
+                                                                                                <div>OG : Sph {item.prescriptionData.og.sphere}
+                                                                                                    {item.prescriptionData.og.cylinder && ` / Cyl ${item.prescriptionData.og.cylinder}`}
+                                                                                                    {item.prescriptionData.og.axis && ` / Axe ${item.prescriptionData.og.axis}°`}
+                                                                                                    {item.prescriptionData.og.addition && ` / Add +${item.prescriptionData.og.addition}`}
+                                                                                                </div>
+                                                                                            )}
+                                                                                            {item.prescriptionData.pupillaryDistance && (
+                                                                                                <div>EP : {item.prescriptionData.pupillaryDistance} mm</div>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        <div style={{ marginTop: '0.35rem' }}>
+                                                                                            <div>📎 Ordonnance : {item.prescriptionData.fileName || 'Fichier téléversé'}</div>
+                                                                                            {item.prescriptionData.fileUrl && (
+                                                                                                <>
+                                                                                                    {/* Aperçu image si c'est un fichier image */}
+                                                                                                    {/\.(jpg|jpeg|png|webp)$/i.test(item.prescriptionData.fileUrl) && (
+                                                                                                        <img
+                                                                                                            src={item.prescriptionData.fileUrl}
+                                                                                                            alt="Ordonnance"
+                                                                                                            style={{ display: 'block', maxWidth: '100%', maxHeight: '220px', objectFit: 'contain', marginTop: '0.5rem', border: '1px solid #ddd', borderRadius: '4px', background: '#fff' }}
+                                                                                                        />
+                                                                                                    )}
+                                                                                                    <a
+                                                                                                        href={item.prescriptionData.fileUrl}
+                                                                                                        target="_blank"
+                                                                                                        rel="noopener noreferrer"
+                                                                                                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.5rem', padding: '0.4rem 0.85rem', background: '#111', color: '#fff', fontSize: '0.75rem', textDecoration: 'none', letterSpacing: '0.04em' }}
+                                                                                                    >
+                                                                                                        <Eye size={13} /> Voir / Télécharger l'ordonnance
+                                                                                                    </a>
+                                                                                                </>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                            )}
                                                                         </div>
                                                                         <span className="order-item-price">{price || '—'}</span>
                                                                     </div>
@@ -1042,190 +1163,300 @@ const AdminPage = () => {
                                 || (getUserDisplayName(u) || '').toLowerCase().includes(q);
                         });
                         return (
-                        <div className="view-users">
-                            <div className="view-header">
-                                <h1 className="view-title">
-                                    <Users size={28} />
-                                    Utilisateurs
-                                    {users.length > 0 && <span className="view-count">{users.length}</span>}
-                                </h1>
-                                <p className="view-subtitle">Gérez les comptes clients inscrits — données issues de <code>auth.users</code></p>
-                            </div>
+                            <div className="view-users">
+                                <div className="view-header">
+                                    <h1 className="view-title">
+                                        <Users size={28} />
+                                        Utilisateurs
+                                        {users.length > 0 && <span className="view-count">{users.length}</span>}
+                                    </h1>
+                                    <p className="view-subtitle">Gérez les comptes clients inscrits — données issues de <code>auth.users</code></p>
+                                </div>
 
-                            <div className="users-layout">
-                                {/* ── Colonne liste ── */}
-                                <div className="users-list-panel">
-                                    {/* Recherche */}
-                                    <div className="users-search-bar">
-                                        <Search size={15} className="users-search-icon" />
-                                        <input
-                                            type="text"
-                                            placeholder="Rechercher par email ou nom…"
-                                            value={userSearch}
-                                            onChange={e => setUserSearch(e.target.value)}
-                                            className="users-search-input"
-                                        />
-                                        {userSearch && (
-                                            <button className="users-search-clear" onClick={() => setUserSearch('')}>
-                                                <X size={13} />
-                                            </button>
+                                <div className="users-layout">
+                                    {/* ── Colonne liste ── */}
+                                    <div className="users-list-panel">
+                                        {/* Recherche */}
+                                        <div className="users-search-bar">
+                                            <Search size={15} className="users-search-icon" />
+                                            <input
+                                                type="text"
+                                                placeholder="Rechercher par email ou nom…"
+                                                value={userSearch}
+                                                onChange={e => setUserSearch(e.target.value)}
+                                                className="users-search-input"
+                                            />
+                                            {userSearch && (
+                                                <button className="users-search-clear" onClick={() => setUserSearch('')}>
+                                                    <X size={13} />
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {users.length === 0 ? (
+                                            <div className="empty-state large">
+                                                <User size={40} />
+                                                <p>Aucun utilisateur trouvé.</p>
+                                                <small>Créez la fonction SQL <code>get_admin_users()</code> dans Supabase.</small>
+                                            </div>
+                                        ) : filteredUsers.length === 0 ? (
+                                            <div className="empty-state">
+                                                <Search size={28} />
+                                                <p>Aucun résultat pour « {userSearch} »</p>
+                                            </div>
+                                        ) : (
+                                            <div className="users-list-scroll">
+                                                {filteredUsers.map(u => {
+                                                    const initials = getUserInitials(u);
+                                                    const displayName = getUserDisplayName(u);
+                                                    const isActive = selectedUser?.id === u.id;
+                                                    return (
+                                                        <div
+                                                            key={u.id}
+                                                            className={`user-list-item ${isActive ? 'active' : ''}`}
+                                                            onClick={() => setSelectedUser(u)}
+                                                        >
+                                                            <div className="uli-avatar">{initials}</div>
+                                                            <div className="uli-info">
+                                                                <span className="uli-email">{u.email || '—'}</span>
+                                                                {displayName && <span className="uli-name">{displayName}</span>}
+                                                            </div>
+                                                            <div className="uli-right">
+                                                                {u.email_confirmed_at
+                                                                    ? <span className="user-badge verified"><CheckCheck size={10} /> Vérifié</span>
+                                                                    : <span className="user-badge pending"><Clock size={10} /> En attente</span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
                                         )}
                                     </div>
 
-                                    {users.length === 0 ? (
-                                        <div className="empty-state large">
-                                            <User size={40} />
-                                            <p>Aucun utilisateur trouvé.</p>
-                                            <small>Créez la fonction SQL <code>get_admin_users()</code> dans Supabase.</small>
-                                        </div>
-                                    ) : filteredUsers.length === 0 ? (
-                                        <div className="empty-state">
-                                            <Search size={28} />
-                                            <p>Aucun résultat pour « {userSearch} »</p>
-                                        </div>
-                                    ) : (
-                                        <div className="users-list-scroll">
-                                            {filteredUsers.map(u => {
-                                                const initials = getUserInitials(u);
-                                                const displayName = getUserDisplayName(u);
-                                                const isActive = selectedUser?.id === u.id;
-                                                return (
-                                                    <div
-                                                        key={u.id}
-                                                        className={`user-list-item ${isActive ? 'active' : ''}`}
-                                                        onClick={() => setSelectedUser(u)}
-                                                    >
-                                                        <div className="uli-avatar">{initials}</div>
-                                                        <div className="uli-info">
-                                                            <span className="uli-email">{u.email || '—'}</span>
-                                                            {displayName && <span className="uli-name">{displayName}</span>}
-                                                        </div>
-                                                        <div className="uli-right">
+                                    {/* ── Colonne détail ── */}
+                                    <div className={`user-detail-panel ${selectedUser ? 'visible' : ''}`}>
+                                        {!selectedUser ? (
+                                            <div className="user-detail-placeholder">
+                                                <Users size={36} />
+                                                <p>Sélectionnez un utilisateur<br />pour voir ses détails</p>
+                                            </div>
+                                        ) : (() => {
+                                            const u = selectedUser;
+                                            const displayName = getUserDisplayName(u);
+                                            const initials = getUserInitials(u);
+                                            return (
+                                                <div className="user-detail-content">
+                                                    {/* Header */}
+                                                    <div className="user-detail-header">
+                                                        <button className="order-back-btn" onClick={() => setSelectedUser(null)}>
+                                                            <ArrowLeft size={16} />
+                                                        </button>
+                                                        <div className="user-detail-avatar-big">{initials}</div>
+                                                        <div className="user-detail-identity">
+                                                            <span className="user-detail-name">{displayName || u.email}</span>
+                                                            {displayName && <span className="user-detail-email-sub">{u.email}</span>}
                                                             {u.email_confirmed_at
-                                                                ? <span className="user-badge verified"><CheckCheck size={10} /> Vérifié</span>
-                                                                : <span className="user-badge pending"><Clock size={10} /> En attente</span>
+                                                                ? <span className="user-badge verified"><CheckCheck size={10} /> Email vérifié</span>
+                                                                : <span className="user-badge pending"><Clock size={10} /> Email non vérifié</span>
                                                             }
                                                         </div>
                                                     </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
+
+                                                    {/* Infos */}
+                                                    <div className="user-info-grid">
+                                                        <div className="user-info-block">
+                                                            <div className="uib-label"><Mail size={13} /> Email</div>
+                                                            <div className="uib-value">
+                                                                {u.email}
+                                                                <button
+                                                                    className="copy-btn"
+                                                                    onClick={() => copyToClipboard(u.email, 'email-' + u.id)}
+                                                                    title="Copier l'email"
+                                                                >
+                                                                    {copiedId === 'email-' + u.id ? <CheckCheck size={12} /> : <Copy size={12} />}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="user-info-block">
+                                                            <div className="uib-label"><Shield size={13} /> ID utilisateur</div>
+                                                            <div className="uib-value mono">
+                                                                {u.id}
+                                                                <button
+                                                                    className="copy-btn"
+                                                                    onClick={() => copyToClipboard(u.id, 'id-' + u.id)}
+                                                                    title="Copier l'ID"
+                                                                >
+                                                                    {copiedId === 'id-' + u.id ? <CheckCheck size={12} /> : <Copy size={12} />}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="user-info-block">
+                                                            <div className="uib-label"><Clock size={13} /> Inscription</div>
+                                                            <div className="uib-value">
+                                                                {u.created_at
+                                                                    ? new Date(u.created_at).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+                                                                    : '—'}
+                                                            </div>
+                                                        </div>
+
+                                                        {u.last_sign_in_at && (
+                                                            <div className="user-info-block">
+                                                                <div className="uib-label"><Eye size={13} /> Dernière connexion</div>
+                                                                <div className="uib-value">
+                                                                    {new Date(u.last_sign_in_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {(u.phone || u.raw_user_meta_data?.phone) && (
+                                                            <div className="user-info-block">
+                                                                <div className="uib-label">Téléphone</div>
+                                                                <div className="uib-value">{u.phone || u.raw_user_meta_data?.phone}</div>
+                                                            </div>
+                                                        )}
+
+                                                        {u.provider && (
+                                                            <div className="user-info-block">
+                                                                <div className="uib-label">Méthode de connexion</div>
+                                                                <div className="uib-value">
+                                                                    <span className="user-provider-badge">{u.provider}</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Actions */}
+                                                    <div className="user-actions-footer">
+                                                        <button
+                                                            className="btn-user-action danger"
+                                                            onClick={() => handleDeleteUser(u.id)}
+                                                            disabled={deletingUserId === u.id}
+                                                        >
+                                                            <UserX size={15} />
+                                                            {deletingUserId === u.id ? 'Suppression…' : 'Supprimer ce compte'}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
+                                    </div>
                                 </div>
+                            </div>
+                        );
+                    })()}
 
-                                {/* ── Colonne détail ── */}
-                                <div className={`user-detail-panel ${selectedUser ? 'visible' : ''}`}>
-                                    {!selectedUser ? (
-                                        <div className="user-detail-placeholder">
-                                            <Users size={36} />
-                                            <p>Sélectionnez un utilisateur<br />pour voir ses détails</p>
-                                        </div>
-                                    ) : (() => {
-                                        const u = selectedUser;
-                                        const displayName = getUserDisplayName(u);
-                                        const initials = getUserInitials(u);
-                                        return (
-                                            <div className="user-detail-content">
-                                                {/* Header */}
-                                                <div className="user-detail-header">
-                                                    <button className="order-back-btn" onClick={() => setSelectedUser(null)}>
-                                                        <ArrowLeft size={16} />
-                                                    </button>
-                                                    <div className="user-detail-avatar-big">{initials}</div>
-                                                    <div className="user-detail-identity">
-                                                        <span className="user-detail-name">{displayName || u.email}</span>
-                                                        {displayName && <span className="user-detail-email-sub">{u.email}</span>}
-                                                        {u.email_confirmed_at
-                                                            ? <span className="user-badge verified"><CheckCheck size={10} /> Email vérifié</span>
-                                                            : <span className="user-badge pending"><Clock size={10} /> Email non vérifié</span>
-                                                        }
-                                                    </div>
-                                                </div>
+                    {/* ── SETTINGS VIEW ── */}
+                    {activeView === 'settings' && (
+                        <div className="view-settings">
+                            <div className="view-header">
+                                <h1 className="view-title"><Settings size={28} /> Configuration</h1>
+                                <p className="view-subtitle">Gérez les éléments dynamiques de votre site : Hero Section, textes, médias.</p>
+                            </div>
 
-                                                {/* Infos */}
-                                                <div className="user-info-grid">
-                                                    <div className="user-info-block">
-                                                        <div className="uib-label"><Mail size={13} /> Email</div>
-                                                        <div className="uib-value">
-                                                            {u.email}
-                                                            <button
-                                                                className="copy-btn"
-                                                                onClick={() => copyToClipboard(u.email, 'email-' + u.id)}
-                                                                title="Copier l'email"
-                                                            >
-                                                                {copiedId === 'email-' + u.id ? <CheckCheck size={12} /> : <Copy size={12} />}
-                                                            </button>
-                                                        </div>
-                                                    </div>
+                            <div className="settings-layout">
+                                <div className="overview-section">
+                                    <div className="section-header-row">
+                                        <span className="section-heading">Hero Section — Page d'accueil</span>
+                                    </div>
 
-                                                    <div className="user-info-block">
-                                                        <div className="uib-label"><Shield size={13} /> ID utilisateur</div>
-                                                        <div className="uib-value mono">
-                                                            {u.id}
-                                                            <button
-                                                                className="copy-btn"
-                                                                onClick={() => copyToClipboard(u.id, 'id-' + u.id)}
-                                                                title="Copier l'ID"
-                                                            >
-                                                                {copiedId === 'id-' + u.id ? <CheckCheck size={12} /> : <Copy size={12} />}
-                                                            </button>
-                                                        </div>
-                                                    </div>
+                                    <form onSubmit={handleSaveHeroSettings} className="admin-form" style={{ padding: 0, maxHeight: 'none', overflow: 'visible' }}>
 
-                                                    <div className="user-info-block">
-                                                        <div className="uib-label"><Clock size={13} /> Inscription</div>
-                                                        <div className="uib-value">
-                                                            {u.created_at
-                                                                ? new Date(u.created_at).toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
-                                                                : '—'}
-                                                        </div>
-                                                    </div>
+                                        {/* Fieldset — Média */}
+                                        <fieldset className="form-fieldset">
+                                            <legend>Média de fond</legend>
 
-                                                    {u.last_sign_in_at && (
-                                                        <div className="user-info-block">
-                                                            <div className="uib-label"><Eye size={13} /> Dernière connexion</div>
-                                                            <div className="uib-value">
-                                                                {new Date(u.last_sign_in_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    {(u.phone || u.raw_user_meta_data?.phone) && (
-                                                        <div className="user-info-block">
-                                                            <div className="uib-label">Téléphone</div>
-                                                            <div className="uib-value">{u.phone || u.raw_user_meta_data?.phone}</div>
-                                                        </div>
-                                                    )}
-
-                                                    {u.provider && (
-                                                        <div className="user-info-block">
-                                                            <div className="uib-label">Méthode de connexion</div>
-                                                            <div className="uib-value">
-                                                                <span className="user-provider-badge">{u.provider}</span>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {/* Actions */}
-                                                <div className="user-actions-footer">
-                                                    <button
-                                                        className="btn-user-action danger"
-                                                        onClick={() => handleDeleteUser(u.id)}
-                                                        disabled={deletingUserId === u.id}
+                                            <div className="form-row">
+                                                <div className="form-group flex-1">
+                                                    <label>Type de média</label>
+                                                    <select
+                                                        value={heroSettings.mediaType}
+                                                        onChange={e => setHeroSettings(p => ({ ...p, mediaType: e.target.value }))}
                                                     >
-                                                        <UserX size={15} />
-                                                        {deletingUserId === u.id ? 'Suppression…' : 'Supprimer ce compte'}
-                                                    </button>
+                                                        <option value="image">Image</option>
+                                                        <option value="video">Vidéo</option>
+                                                    </select>
+                                                </div>
+                                                <div className="form-group flex-3">
+                                                    <label>Téléverser un fichier <small>(optionnel)</small></label>
+                                                    <input
+                                                        type="file"
+                                                        accept={heroSettings.mediaType === 'video' ? 'video/mp4,video/webm' : 'image/*'}
+                                                        onChange={e => handleHeroMediaUpload(e.target.files[0])}
+                                                        disabled={heroSettings.uploading}
+                                                    />
+                                                    {heroSettings.uploading && (
+                                                        <span className="file-hint" style={{ color: '#f59e0b' }}>Téléversement en cours…</span>
+                                                    )}
+                                                    {heroSettings.mediaUrl && !heroSettings.uploading && (
+                                                        <span className="file-hint" style={{ color: '#10b981' }}>
+                                                            ✓ Média configuré — <a href={heroSettings.mediaUrl} target="_blank" rel="noreferrer" style={{ color: '#10b981', textDecoration: 'underline' }}>Voir</a>
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
-                                        );
-                                    })()}
+
+                                            {/* Aperçu */}
+                                            {heroSettings.mediaUrl && !heroSettings.uploading && (
+                                                <div className="settings-media-preview">
+                                                    {heroSettings.mediaType === 'video' ? (
+                                                        <video src={heroSettings.mediaUrl} muted loop autoPlay playsInline />
+                                                    ) : (
+                                                        <img src={heroSettings.mediaUrl} alt="Aperçu hero" />
+                                                    )}
+                                                </div>
+                                            )}
+                                        </fieldset>
+
+                                        {/* Fieldset — Contenus textuels */}
+                                        <fieldset className="form-fieldset">
+                                            <legend>Contenus textuels</legend>
+
+                                            <div className="form-group">
+                                                <label>Titre principal</label>
+                                                <input
+                                                    type="text"
+                                                    value={heroSettings.title}
+                                                    onChange={e => setHeroSettings(p => ({ ...p, title: e.target.value }))}
+                                                    placeholder="Ex: Collection Printemps Été 26"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div className="form-row">
+                                                <div className="form-group">
+                                                    <label>Texte du bouton</label>
+                                                    <input
+                                                        type="text"
+                                                        value={heroSettings.buttonText}
+                                                        onChange={e => setHeroSettings(p => ({ ...p, buttonText: e.target.value }))}
+                                                        placeholder="Ex: Voir la collection"
+                                                        required
+                                                    />
+                                                </div>
+                                                <div className="form-group">
+                                                    <label>Lien du bouton</label>
+                                                    <input
+                                                        type="text"
+                                                        value={heroSettings.buttonLink}
+                                                        onChange={e => setHeroSettings(p => ({ ...p, buttonLink: e.target.value }))}
+                                                        placeholder="Ex: /shop"
+                                                        required
+                                                    />
+                                                </div>
+                                            </div>
+                                        </fieldset>
+
+                                        <button type="submit" className="btn-submit" disabled={loading || heroSettings.uploading}>
+                                            {loading ? 'Sauvegarde en cours…' : 'Sauvegarder les réglages'}
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-                        );
-                    })()}
+                    )}
                 </div>
             </div>
 

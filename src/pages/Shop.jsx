@@ -114,7 +114,7 @@ const Shop = () => {
 
         // 2. Gender
         if (activeGender !== 'all') {
-            result = result.filter(p => p.gender === activeGender);
+            result = result.filter(p => p.gender === activeGender || p.gender === 'Unisexe');
         }
 
         // 3. Shapes
@@ -167,9 +167,9 @@ const Shop = () => {
     return (
         <div className="shop-page container">
             <SEO
-                title={activeCategory !== 'all' ? `${activeCategory}${activeGender !== 'all' ? ` ${activeGender}` : ''} — Boutique` : 'Boutique — Lunettes Solaires & Optiques'}
+                title={activeCategory !== 'all' ? `${activeCategory}${activeGender !== 'all' ? ` ${activeGender}` : ''} — Boutique` : 'Boutique - Lunettes Solaires & Optiques'}
                 description={activeCategory !== 'all'
-                    ? `Découvrez notre sélection de lunettes ${activeCategory.toLowerCase()}${activeGender !== 'all' ? ` pour ${activeGender.toLowerCase()}` : ''} — Studio Ona. Design minimaliste, matériaux nobles, livraison gratuite.`
+                    ? `Découvrez notre sélection de lunettes ${activeCategory.toLowerCase()}${activeGender !== 'all' ? ` pour ${activeGender.toLowerCase()}` : ''} - Studio Ona. Design minimaliste, matériaux nobles, livraison gratuite.`
                     : 'Explorez la collection Studio Ona : lunettes de soleil, montures optiques et accessoires de créateur. Filtrez par style, couleur, matière. Livraison et retours gratuits.'
                 }
                 keywords={`acheter lunettes ${activeCategory !== 'all' ? activeCategory.toLowerCase() : 'en ligne'}, lunettes ${activeGender !== 'all' ? activeGender.toLowerCase() : 'homme femme'}, boutique lunettes design, collection lunettes créateur`}

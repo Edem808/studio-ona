@@ -300,7 +300,7 @@
     justify-content: space-between;
     align-items: center;
     font-family: var(--font-sans);
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #000;
     cursor: pointer;
@@ -312,11 +312,12 @@
     gap: 1rem;
 }
 
-.badge {
+.product-badges .badge {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+    padding: 0.6rem 0.8rem;
     border: 1px solid #ccc;
     font-size: 0.875rem;
     color: #666;

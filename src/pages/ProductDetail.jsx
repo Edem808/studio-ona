@@ -8,6 +8,7 @@ import SEO from '../components/SEO';
 import ProductCard from '../components/UI/ProductCard';
 import ProductReviews from '../components/UI/ProductReviews';
 import VirtualTryOn from '../components/UI/VirtualTryOn';
+import PrescriptionPopup from '../components/UI/PrescriptionPopup';
 import './ProductDetail.css';
 
 const getValidImageUrl = (url) => {
@@ -28,6 +29,7 @@ const ProductDetail = () => {
     const [selectedColor, setSelectedColor] = useState('');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isVTOOpen, setIsVTOOpen] = useState(false);
+    const [isPrescriptionOpen, setIsPrescriptionOpen] = useState(false);
 
     const { toggleWishlist, isInWishlist, setIsWishlistOpen } = useWishlist();
     const { cart, addToCart, setIsCartOpen } = useCart();
@@ -126,7 +128,18 @@ const ProductDetail = () => {
     };
 
     const handleAddToCart = () => {
-        addToCart(product, selectedColor, 1);
+        // Pour les lunettes optiques, ouvrir la popup de correction d'abord
+        if (product.category === 'Optiques') {
+            setIsPrescriptionOpen(true);
+        } else {
+            addToCart(product, selectedColor, 1);
+            setIsCartOpen(true);
+        }
+    };
+
+    const handlePrescriptionConfirm = (prod, color, qty, prescData) => {
+        addToCart(prod, color, qty, prescData);
+        setIsPrescriptionOpen(false);
         setIsCartOpen(true);
     };
 
@@ -389,6 +402,15 @@ const ProductDetail = () => {
                 onClose={() => setIsVTOOpen(false)}
                 product={product}
             />
+
+            {isPrescriptionOpen && (
+                <PrescriptionPopup
+                    product={product}
+                    selectedColor={selectedColor}
+                    onConfirm={handlePrescriptionConfirm}
+                    onCancel={() => setIsPrescriptionOpen(false)}
+                />
+            )}
         </div>
     );
 };
