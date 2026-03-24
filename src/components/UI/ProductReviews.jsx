@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Star } from 'lucide-react';
 import './ProductReviews.css';
 
-const ProductReviews = ({ productId }) => {
+const ProductReviews = ({ productId, onReviewsLoaded }) => {
     const { user } = useAuth();
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -16,6 +16,7 @@ const ProductReviews = ({ productId }) => {
     const [userName, setUserName] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [showAllReviews, setShowAllReviews] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -52,6 +53,7 @@ const ProductReviews = ({ productId }) => {
 
             if (!error && data) {
                 setReviews(data);
+                if (onReviewsLoaded) onReviewsLoaded(data);
             }
         } catch (err) {
             console.error("Erreur lors de la récupération des avis:", err);
@@ -87,9 +89,11 @@ const ProductReviews = ({ productId }) => {
                 console.error(updateError);
             } else {
                 const updatedReview = data && data.length > 0 ? data[0] : { ...existingReview, rating, comment, user_name: userName };
-                setReviews(reviews.map(r => r.id === existingReview.id ? updatedReview : r));
+                const updatedReviews = reviews.map(r => r.id === existingReview.id ? updatedReview : r);
+                setReviews(updatedReviews);
                 setExistingReview(updatedReview);
                 setShowForm(false);
+                if (onReviewsLoaded) onReviewsLoaded(updatedReviews);
             }
         } else {
             const newReview = {
@@ -110,11 +114,13 @@ const ProductReviews = ({ productId }) => {
                 console.error(insertError);
             } else {
                 const createdReview = data && data.length > 0 ? data[0] : { ...newReview, id: Date.now().toString(), created_at: new Date().toISOString() };
-                setReviews([createdReview, ...reviews]);
+                const newReviews = [createdReview, ...reviews];
+                setReviews(newReviews);
                 setExistingReview(createdReview);
                 setShowForm(false);
                 setComment('');
                 setRating(5);
+                if (onReviewsLoaded) onReviewsLoaded(newReviews);
             }
         }
 
@@ -205,7 +211,7 @@ const ProductReviews = ({ productId }) => {
                             required
                         ></textarea>
                     </div>
-                    <button type="submit" className="btn-buy-now submit-review" disabled={submitting}>
+                    <button type="submit" className="btn-add-cart submit-review" disabled={submitting}>
                         {submitting ? 'Envoi...' : (existingReview ? 'Mettre à jour mon avis' : 'Envoyer mon avis')}
                     </button>
                 </form>
@@ -215,24 +221,34 @@ const ProductReviews = ({ productId }) => {
                 {loading ? (
                     <p style={{ fontStyle: 'italic', color: '#666' }}>Chargement des avis...</p>
                 ) : reviews.length > 0 ? (
-                    reviews.map((review) => (
-                        <div key={review.id} className="review-card">
-                            <div className="review-header">
-                                <span className="reviewer-name">{review.user_name}</span>
-                                <span className="review-date">
-                                    {new Date(review.created_at).toLocaleDateString('fr-FR', {
-                                        year: 'numeric', month: 'long', day: 'numeric'
-                                    })}
-                                </span>
+                    <>
+                        {(showAllReviews ? reviews : reviews.slice(0, 4)).map((review) => (
+                            <div key={review.id} className="review-card">
+                                <div className="review-header">
+                                    <span className="reviewer-name">{review.user_name}</span>
+                                    <span className="review-date">
+                                        {new Date(review.created_at).toLocaleDateString('fr-FR', {
+                                            year: 'numeric', month: 'long', day: 'numeric'
+                                        })}
+                                    </span>
+                                </div>
+                                <div className="review-stars">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star key={star} size={14} fill={star <= review.rating ? "#000" : "none"} color={star <= review.rating ? "#000" : "#ccc"} strokeWidth={1} />
+                                    ))}
+                                </div>
+                                <p className="review-comment">{review.comment}</p>
                             </div>
-                            <div className="review-stars">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star key={star} size={14} fill={star <= review.rating ? "#000" : "none"} color={star <= review.rating ? "#000" : "#ccc"} strokeWidth={1} />
-                                ))}
-                            </div>
-                            <p className="review-comment">{review.comment}</p>
-                        </div>
-                    ))
+                        ))}
+                        {reviews.length > 4 && (
+                            <button
+                                className="btn-show-more-reviews"
+                                onClick={() => setShowAllReviews(!showAllReviews)}
+                            >
+                                {showAllReviews ? 'Voir moins d\'avis' : `Voir plus d'avis (${reviews.length - 4})`}
+                            </button>
+                        )}
+                    </>
                 ) : (
                     <p className="no-reviews">Aucun avis pour le moment. Soyez le premier à donner votre avis !</p>
                 )}

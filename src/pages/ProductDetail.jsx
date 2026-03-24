@@ -31,6 +31,17 @@ const ProductDetail = () => {
     const [isVTOOpen, setIsVTOOpen] = useState(false);
     const [isPrescriptionOpen, setIsPrescriptionOpen] = useState(false);
 
+    // Dynamic reviews data from ProductReviews component
+    const [reviewsData, setReviewsData] = useState({ count: 0, average: 0 });
+
+    const handleReviewsLoaded = (reviews) => {
+        const count = reviews.length;
+        const average = count > 0
+            ? parseFloat((reviews.reduce((acc, r) => acc + r.rating, 0) / count).toFixed(1))
+            : 0;
+        setReviewsData({ count, average });
+    };
+
     const { toggleWishlist, isInWishlist, setIsWishlistOpen } = useWishlist();
     const { cart, addToCart, setIsCartOpen } = useCart();
 
@@ -217,20 +228,20 @@ const ProductDetail = () => {
                     <div className="product-info-inner">
                         <h1 className="product-title text-sans">{product.name}</h1>
 
-                        {product.rating != null && product.reviewCount != null && (
+                        {reviewsData.count > 0 && (
                             <div className="product-reviews">
                                 <div className="stars">
                                     {[1, 2, 3, 4, 5].map((star) => {
-                                        if (product.rating >= star) {
+                                        if (reviewsData.average >= star) {
                                             return <span key={star} className="star filled">★</span>;
-                                        } else if (product.rating >= star - 0.5) {
+                                        } else if (reviewsData.average >= star - 0.5) {
                                             return <span key={star} className="star half-filled">★</span>;
                                         } else {
                                             return <span key={star} className="star empty">★</span>;
                                         }
                                     })}
                                 </div>
-                                <a href="#reviews" className="review-count">{product.reviewCount} Avis</a>
+                                <a href="#reviews" className="review-count">{reviewsData.count} Avis</a>
                             </div>
                         )}
 
@@ -381,7 +392,7 @@ const ProductDetail = () => {
                         </div>
 
                         {/* Avis Clients Component */}
-                        <ProductReviews productId={product.id} />
+                        <ProductReviews productId={product.id} onReviewsLoaded={handleReviewsLoaded} />
                     </div>
                 </div>
             </div>

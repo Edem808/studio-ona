@@ -22,6 +22,7 @@ import CGV from './pages/CGV';
 import CGU from './pages/CGU';
 import Confidentialite from './pages/Confidentialite';
 import MentionsLegales from './pages/MentionsLegales';
+import Cookies from './pages/Cookies';
 import FAQ from './pages/FAQ';
 import Contact from './pages/Contact';
 import Magasin from './pages/Magasin';
@@ -66,6 +67,7 @@ function App() {
                 <Route path="/cgu" element={<CGU />} />
                 <Route path="/confidentialite" element={<Confidentialite />} />
                 <Route path="/mentions-legales" element={<MentionsLegales />} />
+                <Route path="/cookies" element={<Cookies />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/magasin" element={<Magasin />} />

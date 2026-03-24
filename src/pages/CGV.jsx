@@ -18,12 +18,12 @@ const CGV = () => {
                 <section>
                     <h2>Article 1 – Identification du vendeur</h2>
                     <p>
-                        Le présent site est exploité par la société [NOM DE LA SOCIÉTÉ], [FORME JURIDIQUE] au capital de
-                        [MONTANT] €, immatriculée au Registre du Commerce et des Sociétés de [VILLE RCS] sous le numéro
-                        SIRET [SIRET], dont le siège social est situé au [ADRESSE COMPLÈTE] (ci-après « Studio Ona »).
+                        Le présent site est exploité par la société Studio Ona, SAS au capital de
+                        10 000 €, immatriculée au Registre du Commerce et des Sociétés de Paris sous le numéro
+                        SIRET 123 456 789 00012, dont le siège social est situé au 12 Rue des Lunetiers, 75003 Paris, France (ci-après « Studio Ona »).
                     </p>
-                    <p>Numéro de TVA intracommunautaire : [N° TVA]</p>
-                    <p>Adresse e-mail : [EMAIL DE CONTACT]</p>
+                    <p>Numéro de TVA intracommunautaire : FR 12 123456789</p>
+                    <p>Adresse e-mail : contactstudio.ona@gmail.com</p>
                 </section>
 
                 <section>
@@ -82,7 +82,7 @@ const CGV = () => {
                     <h2>Article 6 – Paiement</h2>
                     <p>
                         Le paiement est exigible immédiatement à la commande. Les paiements sont sécurisés et peuvent être
-                        effectués par les moyens suivants : [carte bancaire Visa/Mastercard, PayPal, etc.].
+                        effectués par les moyens suivants : carte bancaire Visa/Mastercard, PayPal et Apple Pay.
                     </p>
                     <p>
                         Studio Ona utilise un système de paiement sécurisé conforme aux normes PCI-DSS. Les coordonnées
@@ -98,10 +98,10 @@ const CGV = () => {
                     </p>
                     <p>Les délais de livraison indicatifs sont les suivants :</p>
                     <ul>
-                        <li>France métropolitaine : [X à Y jours ouvrés]</li>
-                        <li>DOM-TOM : [X à Y jours ouvrés]</li>
-                        <li>Europe : [X à Y jours ouvrés]</li>
-                        <li>International : [X à Y jours ouvrés]</li>
+                        <li>France métropolitaine : 2 à 3 jours ouvrés</li>
+                        <li>DOM-TOM : 5 à 7 jours ouvrés</li>
+                        <li>Europe : 3 à 5 jours ouvrés</li>
+                        <li>International : 7 à 10 jours ouvrés</li>
                     </ul>
                     <p>
                         En cas de retard de livraison, Studio Ona en informera le Client dans les meilleurs délais. Le retard
@@ -120,7 +120,7 @@ const CGV = () => {
                     </p>
                     <p>
                         Pour exercer ce droit, le Client doit notifier sa décision à Studio Ona avant l'expiration du délai,
-                        par courrier électronique à [EMAIL] ou par courrier à [ADRESSE], en utilisant le formulaire de
+                        par courrier électronique à contactstudio.ona@gmail.com ou par courrier à 12 Rue des Lunetiers, 75003 Paris, France, en utilisant le formulaire de
                         rétractation disponible en annexe ou par toute déclaration dénuée d'ambiguïté.
                     </p>
                     <p>
@@ -172,8 +172,7 @@ const CGV = () => {
                     <p>
                         Les présentes CGV sont soumises au droit français. En cas de litige, le Client est invité à
                         contacter Studio Ona en priorité afin de trouver une solution amiable. À défaut, le Client peut
-                        recourir à la médiation de la consommation en contactant le médiateur suivant : [NOM ET COORDONNÉES
-                        DU MÉDIATEUR].
+                        recourir à la médiation de la consommation en contactant le médiateur suivant : CM2C, 14 rue Saint Jean 75017 Paris.
                     </p>
                     <p>
                         Conformément au Règlement européen n°524/2013, le Client peut également recourir à la plateforme de

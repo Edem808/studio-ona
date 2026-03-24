@@ -22,7 +22,7 @@ const CGU = () => {
                         modalités et conditions d'utilisation du site internet studio-ona.melissadesjardins.fr (ci-après «
                         le Site »), ainsi que les droits et obligations des utilisateurs.
                     </p>
-                    <p>Le Site est édité par [NOM DE LA SOCIÉTÉ], opticien-lunetier.</p>
+                    <p>Le Site est édité par Studio Ona, opticien-lunetier.</p>
                 </section>
 
                 <section>

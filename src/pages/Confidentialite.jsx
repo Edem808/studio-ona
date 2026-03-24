@@ -24,9 +24,9 @@ const Confidentialite = () => {
                 <section>
                     <h2>1. Responsable du traitement</h2>
                     <p>
-                        [NOM DE LA SOCIÉTÉ]<br />
-                        [ADRESSE DU SIÈGE SOCIAL]<br />
-                        E-mail : [EMAIL DE CONTACT]
+                        Studio Ona<br />
+                        12 Rue des Lunetiers, 75003 Paris, France<br />
+                        E-mail : contactstudio.ona@gmail.com
                     </p>
                 </section>
 
@@ -93,7 +93,7 @@ const Confidentialite = () => {
                     <h2>5. Destinataires des données</h2>
                     <p>Vos données personnelles peuvent être communiquées aux catégories de destinataires suivantes :</p>
                     <ul>
-                        <li>Prestataires de paiement ([Stripe, PayPal, etc.]) pour le traitement sécurisé des transactions ;</li>
+                        <li>Prestataires de paiement (Stripe, PayPal et Apple Pay) pour le traitement sécurisé des transactions ;</li>
                         <li>Transporteurs et sociétés de livraison pour l'acheminement de vos commandes ;</li>
                         <li>Prestataires techniques (hébergement, maintenance du site) ;</li>
                         <li>Outils d'analyse et de marketing (Google Analytics, Meta, etc.) sous réserve de votre consentement ;</li>
@@ -125,7 +125,7 @@ const Confidentialite = () => {
                         <li><strong>Droit de définir des directives post-mortem</strong> relatives au sort de vos données après votre décès.</li>
                     </ul>
                     <p>
-                        Pour exercer vos droits, contactez-nous à : [EMAIL DE CONTACT], en joignant une copie d'un
+                        Pour exercer vos droits, contactez-nous à : contactstudio.ona@gmail.com, en joignant une copie d'un
                         justificatif d'identité. Nous nous engageons à vous répondre dans un délai d'un mois.
                     </p>
                     <p>

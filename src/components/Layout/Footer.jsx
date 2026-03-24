@@ -53,16 +53,6 @@ const Footer = () => {
 
                 <div className="footer-ona-right">
                     <div className="footer-ona-col">
-                        <h3 className="footer-ona-title">Service Client</h3>
-                        <ul>
-                            <li><Link to="/faq">FAQ</Link></li>
-                            <li><Link to="/contact">Contact</Link></li>
-                            <li><Link to="/sav">SAV</Link></li>
-                            <li><Link to="/livraisons">Livraisons et Retours</Link></li>
-                            <li><Link to="/garanties">Garanties</Link></li>
-                        </ul>
-                    </div>
-                    <div className="footer-ona-col">
                         <h3 className="footer-ona-title">Informations</h3>
                         <ul>
                             <li><Link to="/cgv">Conditions générales de vente</Link></li>
@@ -73,11 +63,18 @@ const Footer = () => {
                         </ul>
                     </div>
                     <div className="footer-ona-col">
+                        <h3 className="footer-ona-title">Service Client</h3>
+                        <ul>
+                            <li><Link to="/faq">FAQ</Link></li>
+                            <li><Link to="/contact">Contact</Link></li>
+                        </ul>
+                    </div>
+
+                    <div className="footer-ona-col">
                         <h3 className="footer-ona-title">À propos</h3>
                         <ul>
                             <li><Link to="/about">Notre histoire</Link></li>
                             <li><Link to="/magasin">Notre magasin</Link></li>
-                            <li><Link to="/recrutement">Recrutement</Link></li>
                         </ul>
                     </div>
                 </div>

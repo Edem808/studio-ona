@@ -19,34 +19,34 @@ const MentionsLegales = () => {
                 <section>
                     <h2>1. Éditeur du site</h2>
                     <p>
-                        <strong>Raison sociale :</strong> [NOM DE LA SOCIÉTÉ]<br />
+                        <strong>Raison sociale :</strong> Studio Ona<br />
                         <strong>Forme juridique :</strong> Société par Actions Simplifiée Unipersonnelle (SASU)<br />
-                        <strong>Capital social :</strong> [MONTANT] €<br />
-                        <strong>SIRET :</strong> [NUMÉRO SIRET]<br />
-                        <strong>N° TVA intracommunautaire :</strong> [N° TVA]<br />
-                        <strong>Siège social :</strong> [ADRESSE COMPLÈTE]<br />
-                        <strong>Téléphone :</strong> [NUMÉRO DE TÉLÉPHONE]<br />
-                        <strong>E-mail :</strong> [ADRESSE E-MAIL]
+                        <strong>Capital social :</strong> 10 000 €<br />
+                        <strong>SIRET :</strong> 123 456 789 00012<br />
+                        <strong>N° TVA intracommunautaire :</strong> FR 12 123456789<br />
+                        <strong>Siège social :</strong> 12 Rue des Lunetiers, 75003 Paris, France<br />
+                        <strong>Téléphone :</strong> 01 23 45 67 89<br />
+                        <strong>E-mail :</strong> contactstudio.ona@gmail.com
                     </p>
                     <p>
                         <strong>Activité réglementée :</strong> Opticien-lunetier. Inscription à l'Agence Nationale du DPC
-                        (ANDPC) sous le numéro [N° ANDPC] — Diplôme d'opticien-lunetier reconnu par l'État.
+                        (ANDPC) sous le numéro 1234567890 — Diplôme d'opticien-lunetier reconnu par l'État.
                     </p>
                 </section>
 
                 <section>
                     <h2>2. Directeur de la publication</h2>
                     <p>
-                        [NOM DU/DE LA DIRIGEANT(E)], en qualité de Président(e) de la SASU.
+                        Edem, en qualité de Président(e) de la SASU.
                     </p>
                 </section>
 
                 <section>
                     <h2>3. Hébergement du site</h2>
                     <p>
-                        <strong>Hébergeur :</strong> [NOM DE L'HÉBERGEUR]<br />
-                        <strong>Adresse :</strong> [ADRESSE DE L'HÉBERGEUR]<br />
-                        <strong>Site web :</strong> <a href="[URL DE L'HÉBERGEUR]" target="_blank" rel="noopener noreferrer">[URL DE L'HÉBERGEUR]</a>
+                        <strong>Hébergeur :</strong> Vercel Inc.<br />
+                        <strong>Adresse :</strong> 340 S Lemon Ave #4133 Walnut, CA 91789, USA<br />
+                        <strong>Site web :</strong> <a href="https://vercel.com" target="_blank" rel="noopener noreferrer">https://vercel.com</a>
                     </p>
                 </section>
 
@@ -55,7 +55,7 @@ const MentionsLegales = () => {
                     <p>
                         L'ensemble des contenus publiés sur le site studio-ona.melissadesjardins.fr (textes,
                         photographies, illustrations, logos, vidéos) sont protégés par le droit de la propriété
-                        intellectuelle et appartiennent à [NOM DE LA SOCIÉTÉ] ou à leurs auteurs respectifs.
+                        intellectuelle et appartiennent à Studio Ona ou à leurs auteurs respectifs.
                     </p>
                     <p>
                         Toute reproduction, représentation, modification, publication ou adaptation de tout ou partie de ces
@@ -73,7 +73,7 @@ const MentionsLegales = () => {
                     </p>
                     <p>
                         Pour exercer vos droits, vous pouvez contacter notre délégué à la protection des données à l'adresse
-                        : [EMAIL DPO ou EMAIL DE CONTACT].
+                        : contactstudio.ona@gmail.com.
                     </p>
                 </section>
 
@@ -92,9 +92,9 @@ const MentionsLegales = () => {
                         consommation. Studio Ona adhère au service de médiation suivant :
                     </p>
                     <p>
-                        [NOM DU MÉDIATEUR]<br />
-                        [ADRESSE]<br />
-                        [SITE INTERNET]
+                        CM2C<br />
+                        14 rue Saint Jean 75017 Paris<br />
+                        https://www.cm2c.net
                     </p>
                 </section>
 
