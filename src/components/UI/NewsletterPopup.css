@@ -7,12 +7,15 @@
     padding: 2.5rem 2rem 2rem 2rem;
     width: 380px;
     max-width: calc(100vw - 2rem);
+    box-sizing: border-box;
     z-index: 9999;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    -webkit-animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .newsletter-popup.closing {
+    -webkit-animation: slideDownFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     animation: slideDownFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -76,18 +79,29 @@
 }
 
 .newsletter-form {
+    display: -webkit-box;
+    display: -webkit-flex;
     display: flex;
+    -webkit-flex-wrap: nowrap;
+    flex-wrap: nowrap;
     gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .newsletter-input {
-    flex: 1;
+    -webkit-flex: 1 1 0%;
+    flex: 1 1 0%;
+    min-width: 0;
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.4);
     color: var(--color-text-white, #fff);
     padding: 0.85rem 1rem;
     font-size: 0.85rem;
     outline: none;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
     transition: border-color 0.3s ease;
 }
 
@@ -100,13 +114,18 @@
 }
 
 .newsletter-submit {
+    -webkit-flex: 0 0 auto;
+    flex: 0 0 auto;
     background-color: var(--color-white, #ffffff);
     color: var(--color-text, #1a1a1a);
     border: none;
     padding: 0.85rem 1.75rem;
     font-size: 0.85rem;
     font-weight: 600;
+    white-space: nowrap;
     cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
     transition: opacity 0.3s ease;
 }
 
